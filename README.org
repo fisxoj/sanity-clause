@@ -1,0 +1,10 @@
+* Sanity Clause
+#+ATTR_HTML: title="Build Status"
+[[https://travis-ci.org/fisxoj/sanity-clause][file:https://travis-ci.org/fisxoj/sanity-clause.svg?branch=master]]
+#+ATTR_HTML: title="Coverage Status"
+[[https://coveralls.io/github/fisxoj/sanity-clause?branch=master][file:https://coveralls.io/repos/github/fisxoj/sanity-clause/badge.svg?branch=master]]
+
+#+BEGIN_VERSE
+There's no such thing as Sanity Clause
+  -- Groucho Marx
+#+END_VERSE
