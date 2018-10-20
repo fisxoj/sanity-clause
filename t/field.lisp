@@ -6,7 +6,7 @@
 
 (in-package #:t.sanity-clause.field)
 
-(plan 2)
+(plan 3)
 
 (defclass inventory ()
   ((potato-count :reader potato-count-of :initarg :count)))
@@ -44,7 +44,8 @@
     (is (sanity-clause.field::validate int-field "4") nil
         "Acceptable values should not raise validation-error.")
 
-    (is-error (sanity-clause.field::validate int-field "balloon") 'sanity-clause.field:validation-error
+    (is-error (sanity-clause.field::validate int-field "balloon")
+	      'sanity-clause.field:validation-error
               "garbage strings raise errors get marshalled to integers.")
 
     (handler-case
@@ -55,5 +56,17 @@
       (sanity-clause.field:validation-error (e)
         (is (length (sanity-clause.field::error-messages-of e)) 2
             "Got two failed validations when they should have failed.")))))
+
+(subtest "field types"
+  (subtest "constant field"
+    (let ((constant-field (make-instance 'sanity-clause.field:constant-field :attribute 'potato-type :constant :russet)))
+
+      (is (sanity-clause.field::get-value constant-field '(:lemon 4 :potato-type :armadillo))
+	  :russet
+	  "Always returns the constant value.")
+
+      (is-error (sanity-clause.field:validate constant-field :armadillo)
+		'sanity-clause.field:validation-error
+		"Raises an error if the value doesn't match the constant value"))))
 
 (finalize)
