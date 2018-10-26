@@ -3,6 +3,12 @@ sudo: false
 notifications:
   email: false
 
+addons:
+  apt:
+    packages:
+      - libc6-i386
+      - openjdk-7-jre
+
 env:
   global:
     - PATH=$HOME/.roswell/bin:$PATH
@@ -11,13 +17,16 @@ env:
   matrix:
     - LISP=sbcl-bin COVERALLS=true
     - LISP=ccl-bin
+    - LISP=abcl
+    - LISP=clisp
+    - LISP=ecl
+    - LISP=allegro
+    - LISP=cmucl
 
 install:
   # Install Roswell
   - curl -L https://raw.githubusercontent.com/snmsts/roswell/release/scripts/install-for-ci.sh | sh
-  - ros install prove
-  # Coveralls support
-  - git clone https://github.com/fukamachi/cl-coveralls ~/lisp/cl-coveralls
+  - ros install fukamachi/rove
   - git clone https://github.com/fisxoj/validate ~/lisp/validate
 
 cache:
@@ -30,4 +39,4 @@ before_script:
   - ros config
 
 script:
-  - run-prove sanity-clause-test.asd
+  - rove sanity-clause-test.asd

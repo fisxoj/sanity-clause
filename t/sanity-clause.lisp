@@ -1,10 +1,6 @@
 (defpackage t.sanity-clause
   (:use #:cl
-	#:prove
+	#:rove
         #:alexandria))
 
 (in-package #:t.sanity-clause)
-
-(plan nil)
-
-(finalize)

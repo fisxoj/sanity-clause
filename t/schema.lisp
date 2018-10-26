@@ -1,11 +1,7 @@
 (defpackage t.sanity-clause.schema
   (:use #:cl
-	#:prove
+	#:rove
 	#:alexandria
 	#:sanity-clause.schema))
 
 (in-package #:t.sanity-clause.schema)
-
-(plan 0)
-
-(finalize)

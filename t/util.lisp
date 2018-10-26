@@ -1,41 +1,54 @@
 (defpackage t.sanity-clause.util
   (:use #:cl
 	#:alexandria
-	#:prove
+	#:rove
 	#:sanity-clause.util))
 
 (in-package #:t.sanity-clause.util)
 
-(plan 1)
+(defclass test-class ()
+  ((value :initarg :value)))
 
-(subtest "get-value"
+(deftest test-get-value
   (let ((alist '((:value . 2)))
-	(plist '(:value 2)))
+	(plist '(:value 2))
+        (object (make-instance 'test-class :value 2)))
 
-    (subtest "alist"
+    (testing "alists"
       (multiple-value-bind (value found-p) (get-value alist :value)
-	(is value 2
+	(ok (= value 2)
 	    "Finds a value that exists.")
-	(is found-p t
+	(ok (eq found-p t)
 	    "Says it found the value for a value that exists."))
 
       (multiple-value-bind (value found-p) (get-value alist :nonexistent :default)
-	(is value :default
+	(ok (eq value :default)
 	    "Returns the default value for a missing value.")
-	(is found-p nil
+	(ok (eq found-p nil)
 	    "Knows it didn't find the value for a missing value.")))
 
-    (subtest "plist"
+    (testing "plists"
       (multiple-value-bind (value found-p) (get-value plist :value)
-	(is value 2
+	(ok (= value 2)
 	    "Finds a value that exists.")
-	(is found-p t
+	(ok (eq found-p t)
 	    "Says it found the value for a value that exists."))
 
       (multiple-value-bind (value found-p) (get-value plist :nonexistent :default)
-	(is value :default
+	(ok (eq value :default)
 	    "Returns the default value for a missing value.")
-	(is found-p nil
-	    "Knows it didn't find the value for a missing value.")))))
+	(ok (eq found-p nil)
+	    "Knows it didn't find the value for a missing value.")))
 
-(finalize)
+    (testing "objects"
+      (multiple-value-bind (value found-p) (get-value object 'value)
+        (ok (= value 2)
+            "finds a value that exists.")
+        (ok (eq found-p t)
+            "says it found the value for a value that exists."))
+
+      (multiple-value-bind (value found-p) (get-value object 'nonexistent :default)
+        (ok (eq value :default)
+            "returns the default value for a missing value.")
+        (ok (eq found-p nil)
+            "knows it didn't find a value for a missing value.")))))

@@ -4,11 +4,15 @@
   :depends-on ("alexandria"
 	       "trivial-types"
                "cl-arrows"
+	       "str"
 	       "validate"
+	       "parse-float"
+	       "cl-ppcre"
 	       "closer-mop"
 	       "jonathan")
   :pathname "src"
   :components ((:file "util")
+               (:file "validator")
 	       (:file "field")
 	       (:file "schema")
 	       (:module "serde"

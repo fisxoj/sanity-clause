@@ -1,27 +1,62 @@
 (defpackage t.sanity-clause.serde
   (:use #:cl
-	#:prove
+	#:rove
 	#:alexandria
 	#:sanity-clause.serde)
+  (:import-from #:sanity-clause.field
+		#:make-field
+		#:conversion-error
+		#:validation-error
+		#:required-value-error)
   (:shadowing-import-from #:sanity-clause.serde
 			  #:load))
 
 (in-package #:t.sanity-clause.serde)
 
-(plan 1)
 
-(subtest "load"
-  (subtest "plist"
-    (let ((plist-schema (list :name (make-instance 'sanity-clause.field:field
-						   :validator (lambda (v) (v:str v :min-length 3)))
-			      :age  (make-instance 'sanity-clause.field:integer-field)))
-	  (acceptable-data '(:name "Matt" :age 30))
-	  (bad-age-data    '(:name "Matt" :age "potato"))
-	  (bad-name-data   '(:name 11     :age 30)))
+(deftest test-load
+  (testing "plists"
+    (let ((plist-schema (list :name (make-field 'string)
+			      :age  (make-field 'integer :required t))))
 
-      (ok (load plist-schema acceptable-data)
-	  "Can load from valid data")
-      (is-error (load plist-schema bad-age-data) 'sanity-clause.field:validation-error)
-      )))
+      (ok (load plist-schema '(:name "Matt" :age 30))
+	  "Can load from valid data.")
 
-(finalize)
+      (ok (load plist-schema '(:name "Matt" :age "30"))
+	  "Can load valid data, converting from a string, if necessary.")
+
+      (ok (signals (load plist-schema '(:name "Matt" :age "potato"))
+              'conversion-error)
+          "A string that isn't an int raises a conversion error.")
+
+      (ok (signals (load plist-schema '(:name 11 :age 30))
+              'conversion-error)
+          "An integer that is not a string raises a validation error.")
+
+      (ok (signals (load plist-schema '(:name "Matt"))
+              'required-value-error)
+          "A missing, required value raises a required value error."))))
+
+
+(deftest test-examples
+  (testing "sexp configuration file"
+    (let* ((raw-configuration (uiop:with-safe-io-syntax ()  (uiop:read-file-form (asdf:system-relative-pathname :sanity-clause-test "t/fixtures/environment.sexp"))))
+	   (schema (list :database-url (make-field 'string :validator (list 'sanity-clause.validator:not-empty
+									    (lambda (v) (unless (str:starts-with-p "postgres" v :ignore-case t)
+											  "expected a postgres protocol."))))
+			 :port (make-field 'integer :validator (lambda (v) (sanity-clause.validator:int v :min 0)))
+			 :mode (make-field 'member :members '(:development :testing :production))
+			 :penguin (make-field 'boolean :default t)))
+	   (configuration (load schema raw-configuration)))
+
+      (ok (typep (getf configuration :database-url) 'string)
+	  "database-uri is a valid string.")
+
+      (ok (typep (getf configuration :port) 'integer)
+	  "port was converted to an integer.")
+
+      (ok (typep (getf configuration :mode) 'keyword)
+	  "mode is a keyword.")
+
+      (ok (typep (getf configuration :penguin) 'boolean)
+	  "a default value for penguin is set."))))
