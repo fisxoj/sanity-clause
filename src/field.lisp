@@ -63,7 +63,7 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
 	    :reader default-of
 	    :initform :missing
 	    :documentation "Value to use during serialization when no value is set.")
-   (validator :type (or function list)
+   (validator :type (or symbol function list)
 	      :initarg :validator
 	      :initform (constantly nil)
 	      :reader validator-of)
