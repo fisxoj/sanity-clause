@@ -5,8 +5,7 @@
   :components ((:file "util")
 	       (:file "field")
 	       (:file "sanity-clause")
-	       (:file "serde/protocol")
-	       (:file "serde/json"))
+	       (:file "serde/protocol"))
   :perform (test-op (op c)
 		    (funcall (read-from-string "rove:run") c
 			     :env '(("VALUE" . "2")

@@ -7,9 +7,10 @@
 
 (in-package #:t.sanity-clause.field)
 
-(defvar +manual-only-fields+ '(member-field
-			       nested-field)
-  "Symbols of field types that require extra data to exist, like :class:`member-field`, which requires a set of symbols as an initarg.")
+(eval-when (:load-toplevel :compile-toplevel)
+  (defvar +manual-only-fields+ '(member-field
+				 nested-field)
+    "Symbols of field types that require extra data to exist, like :class:`member-field`, which requires a set of symbols as an initarg."))
 
 
 (defmacro with-test-fields (() &body body)
