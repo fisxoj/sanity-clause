@@ -17,11 +17,11 @@ env:
   matrix:
     - LISP=sbcl-bin COVERALLS=true
     - LISP=ccl-bin
-    - LISP=abcl
     - LISP=clisp
     - LISP=ecl
     - LISP=allegro
-    - LISP=cmucl
+    # - LISP=abcl
+    # - LISP=cmucl
 
 install:
   # Install Roswell
@@ -39,4 +39,4 @@ before_script:
   - ros config
 
 script:
-  - rove sanity-clause-test.asd
+  - rove sanity-clause.asd
