@@ -51,4 +51,17 @@
         (ok (eq value :default)
             "returns the default value for a missing value.")
         (ok (eq found-p nil)
+            "knows it didn't find a value for a missing value.")))
+
+    (testing "environment variables"
+      (multiple-value-bind (value found-p) (get-value :env 'value)
+        (ok (string= value "2")
+            "finds a value that exists.")
+        (ok (eq found-p t)
+            "says it found the value for a value that exists."))
+
+      (multiple-value-bind (value found-p) (get-value object :env :default)
+        (ok (eq value :default)
+            "returns the default value for a missing value.")
+        (ok (eq found-p nil)
             "knows it didn't find a value for a missing value.")))))

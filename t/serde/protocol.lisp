@@ -59,4 +59,19 @@
 	  "mode is a keyword.")
 
       (ok (typep (getf configuration :penguin) 'boolean)
-	  "a default value for penguin is set."))))
+	  "a default value for penguin is set.")))
+
+  (testing "environment variables"
+    (let* ((schema (list :potato (make-field 'member :members '(:yam :idaho) :required t)
+			 :age (make-field 'integer :validator (lambda (v) (unless (> v 0) "must be greater than zero.")))
+			 :ice-cream (make-field 'member :members '(:strawberry :pistachio) :default :strawberry)))
+	   (configuration (load schema :env)))
+
+      (ok (typep (getf configuration :age) 'integer)
+	  "age is an integer")
+
+      (ok (eq (getf configuration :potato) :yam)
+	  "potato is :yam.")
+
+      (ok (eq (getf configuration :ice-cream) :strawberry)
+	  "ice-cream defaults to strawberry."))))

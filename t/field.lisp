@@ -7,7 +7,7 @@
 
 (in-package #:t.sanity-clause.field)
 
-(defvar +manual-only-fields* '(member-field
+(defvar +manual-only-fields+ '(member-field
 			       nested-field)
   "Symbols of field types that require extra data to exist, like :class:`member-field`, which requires a set of symbols as an initarg.")
 
@@ -22,7 +22,7 @@ E.g. (let ((string-field (make-field 'string))
   `(let (,@(let (field-bindings)
 	     (do-external-symbols (symbol (find-package :sanity-clause.field) field-bindings)
 	       (when (and (str:ends-with-p "-FIELD" (symbol-name symbol))
-			  (not (member symbol +manual-only-fields*))
+			  (not (member symbol +manual-only-fields+))
 			  (find-class symbol nil))
 		 (push `(,symbol (make-instance ',symbol)) field-bindings)))))
      ,@body))
@@ -108,7 +108,21 @@ E.g. (let ((string-field (make-field 'string))
 	    "signals an error for a string that isn't a member of the union.")
 
 	(ok (signals (deserialize member-field 3) 'conversion-error)
-	    "signals an error for a non-string-like type.")))))
+	    "signals an error for a non-string-like type.")))
+
+    (testing "Boolean field"
+      (ok (eq (deserialize boolean-field "on") t)
+	  "converts a truthy string to t.")
+
+      (ok (signals (deserialize boolean-field "wumbo") 'conversion-error)
+	  "signals an error for an uncertain value."))
+
+    (testing "Timestamp field"
+      (ok (typep (deserialize timestamp-field "2006-06-06TZ") 'local-time:timestamp)
+	  "converts values to timestamps from LOCAL-TIME.")
+
+      (ok (signals (deserialize timestamp-field "pizza") 'conversion-error)
+	  "throws a conversion error on badly formatted timestamp."))))
 
 
 (deftest test-validate
@@ -140,63 +154,29 @@ E.g. (let ((string-field (make-field 'string))
       (ok (null (validate string-field "some string"))
 	  "accepts any string."))
 
+    (testing "Constant field"
+      (let ((constant-string-field (make-field 'constant :constant "potato" :test 'string=))
+	    (constant-number-field (make-field 'constant :constant 3 :test '=))
+	    (constant-keyword-field (make-field 'constant :data-key 'potato-type :constant :russet)))
+
+	(ok (null (validate constant-string-field "potato"))
+	    "validates a correct string with string=.")
+
+	(ok (signals (validate constant-string-field "worm") 'validation-error)
+	    "raises an error for a value that isn't the constant according to string=.")
+
+	(ok (null (validate constant-number-field 3))
+	    "validates a constant number value with =.")
+
+	(ok (signals (validate constant-number-field "3") 'validation-error)
+	    "raises an error for a value that isn't = to a constant.")
+
+	(ok (signals (sanity-clause.field:validate constant-keyword-field :armadillo) 'sanity-clause.field:validation-error)
+	    "raises an error if the value doesn't match the constant value")))
+
     (testing "UUID field"
       (ok (null (validate uuid-field "74827715-C657-4122-B6CF-63E3FA700FF6"))
 	  "accepts a uuid string.")
 
       (ok (signals (validate uuid-field "74827715-GGGG-4122-B6CF-63E3FA700FF6") 'validation-error)
 	  "raises validation errors for something that looks like a uuid, but has forbidden 'G's in it."))))
-
-
-(deftest test-field-types
-  (testing "constant field"
-    (let ((constant-field (make-field 'constant :data-key 'potato-type :constant :russet)))
-
-      (ok (eq (sanity-clause.field:get-value constant-field '(:lemon 4 :potato-type :armadillo)) :russet)
-	  "Always returns the constant value.")
-
-      (ok (signals (sanity-clause.field:validate constant-field :armadillo)
-              'sanity-clause.field:validation-error)
-          "Raises an error if the value doesn't match the constant value")))
-
-  (testing "member field"
-    (let ((potato-field (make-field 'member :members '(:yam :yukon :idaho))))
-
-      (ok (eq (deserialize potato-field "Yam") :yam)
-          "finds a string that is STRING-EQUAL to a member keyword.")
-
-      (ok (signals (deserialize potato-field "carrot")
-              'sanity-clause.field:conversion-error)
-          "raises an error when the value can't be found in the union.")))
-
-  (testing "integer field"
-    (let ((age-field (make-field 'integer
-				 :validator (lambda (v) (sanity-clause.validator:int v :min 0)))))
-
-      (ok (= (deserialize age-field "4") 4)
-          "deserializes text to integers.")
-
-      (ok (signals (validate age-field -3)
-              'validation-error)
-          "raises an invalidation error when the minimum value validator fails.")))
-
-  (testing "boolean field"
-    (let ((happy-field (make-field 'boolean))
-          (default-field (make-field 'boolean :default t)))
-
-      (ok (eq (deserialize happy-field "on") t)
-          "converts truthy string to t.")
-
-      (ok (signals (deserialize default-field :potato)
-	      'conversion-error)
-          "uses a default value when the data isn't in the source datastructure.")))
-
-  (testing "timestamp field"
-    (let ((ts-field (make-field 'timestamp :data-key :data)))
-
-      (ok (typep (deserialize ts-field "2006-06-06TZ") 'local-time:timestamp)
-	  "converts values to timestamps from LOCAL-TIME.")
-
-      (ok (signals (deserialize ts-field "pizza")
-	      'conversion-error)
-	  "throws a conversion error on badly formatted timestamp."))))
