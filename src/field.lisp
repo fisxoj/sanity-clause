@@ -312,11 +312,10 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
 			       :value value)))
 
   (:method ((field constant-field) value)
-    (map-error validation-error
-      (unless (funcall (constant-test-of field) (constant-value-of field) value)
-	(error 'validation-error :error-messages (list (format nil "Value ~a is not the constant value ~a" value (constant-value-of field)))
-				 :field field
-				 :value value)))))
+    (unless (funcall (constant-test-of field) (constant-value-of field) value)
+      (error 'validation-error :error-messages (list (format nil "Value ~a is not the constant value ~a" value (constant-value-of field)))
+			       :field field
+			       :value value))))
 
 
 (defmacro with-value-and-found-p (&body body)

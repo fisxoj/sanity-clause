@@ -169,7 +169,7 @@ E.g. (let ((string-field (make-field 'string))
 	(ok (null (validate constant-number-field 3))
 	    "validates a constant number value with =.")
 
-	(ok (signals (validate constant-number-field "3") 'validation-error)
+	(ok (signals (validate constant-number-field 5) 'validation-error)
 	    "raises an error for a value that isn't = to a constant.")
 
 	(ok (signals (sanity-clause.field:validate constant-keyword-field :armadillo) 'sanity-clause.field:validation-error)
