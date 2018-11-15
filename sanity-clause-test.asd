@@ -1,10 +1,13 @@
 (defsystem sanity-clause-test
-  :defsystem-depends-on ("prove-asdf")
   :depends-on ("sanity-clause"
-	       "prove")
+	       "rove")
   :pathname "t"
-  :components ((:test-file "field")
-	       (:test-file "sanity-clause"))
+  :components ((:file "util")
+	       (:file "field")
+	       (:file "sanity-clause")
+	       (:file "serde/protocol"))
   :perform (test-op (op c)
-		    (funcall (read-from-string "prove:run")
-			     (system-relative-pathname :sanity-clause-test #P"t/"))))
+		    (funcall (read-from-string "rove:run") c
+			     :env '(("VALUE" . "2")
+				    ("POTATO" . "YAM")
+				    ("AGE" . "11")))))
