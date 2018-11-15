@@ -53,7 +53,7 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
 	      :initform nil
 	      :reader attribute-of
 	      :documentation "Name of the attribute to write the field's value to when serializing, if null, inferred from the name of the field.")
-   (data-key :type (or null string)
+   (data-key :type (or null string symbol)
              :initform nil
 	     :initarg :data-key
 	     :reader data-key-of
@@ -217,7 +217,7 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
 
 
 (define-condition required-value-error (field-error)
-  ((missing-field-name :type string
+  ((missing-field-name :type (or symbol string)
 		       :initarg :field-name
 		       :reader missing-field-name-of
 		       :documentation "The name of the field that is missinga required value."))
