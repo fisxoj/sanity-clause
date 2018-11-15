@@ -97,6 +97,8 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
 
 
 (defun make-field (type &rest args)
+  "Make a field instance of class ``type-FIELD`` and give it initargs :param:`args`."
+
   (if-let ((class (find-class (find-symbol (concatenate 'string (string-upcase type) "-FIELD") (find-package :sanity-clause.field)))))
     (apply #'make-instance class args)
     (error (format nil "No field class named ~@(~A~)-FIELD" type))))
