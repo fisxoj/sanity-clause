@@ -1,11 +1,11 @@
-(defpackage t.sanity-clause.field
+(defpackage sanity-clause/test.field
   (:use #:cl
 	#:rove
 	#:sanity-clause.field
         #:alexandria
         #:cl-arrows))
 
-(in-package #:t.sanity-clause.field)
+(in-package #:sanity-clause/test.field)
 
 (eval-when (:load-toplevel :compile-toplevel)
   (defvar +manual-only-fields+ '(member-field

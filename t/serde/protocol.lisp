@@ -1,4 +1,4 @@
-(defpackage t.sanity-clause.serde
+(defpackage sanity-clause/test.serde
   (:use #:cl
 	#:rove
 	#:alexandria
@@ -11,7 +11,7 @@
   (:shadowing-import-from #:sanity-clause.serde
 			  #:load))
 
-(in-package #:t.sanity-clause.serde)
+(in-package :sanity-clause/test.serde)
 
 
 (deftest test-load
@@ -40,7 +40,7 @@
 
 (deftest test-examples
   (testing "sexp configuration file"
-    (let* ((raw-configuration (uiop:with-safe-io-syntax ()  (uiop:read-file-form (asdf:system-relative-pathname :sanity-clause-test "t/fixtures/environment.sexp"))))
+    (let* ((raw-configuration (uiop:with-safe-io-syntax () (uiop:read-file-form (asdf:system-relative-pathname :sanity-clause/test "t/fixtures/environment.sexp"))))
 	   (schema (list :database-url (make-field 'string :validator (list 'sanity-clause.validator:not-empty
 									    (lambda (v) (unless (str:starts-with-p "postgres" v :ignore-case t)
 											  "expected a postgres protocol."))))

@@ -1,7 +1,7 @@
 (defsystem sanity-clause
   :author "Matt Novenstern"
   :license "LLGPLv3+"
-  :version "0.2.0"
+  :version "0.3.0"
   :depends-on ("alexandria"
 	       "trivial-types"
                "cl-arrows"
@@ -13,6 +13,7 @@
   :components ((:file "util")
                (:file "validator")
 	       (:file "field")
+               (:file "schema")
 	       (:module "serde"
 		:components ((:file "protocol")))
 	       (:file "sanity-clause"))
@@ -21,4 +22,19 @@
 To make use of it, you define schemas, which are currently property lists with :class:`sanity-clause.field:field` subclasses that dictate the type of values you expect as well as the shape of the property list to be returned after deserializing and validating data.
 
 Eventually, there will be an interface that allows creating schemas attached to classes, so that you can deserialize data directly into a class instance."
-  :in-order-to ((test-op (test-op sanity-clause-test))))
+  :in-order-to ((test-op (test-op sanity-clause/test))))
+
+
+(defsystem sanity-clause/test
+  :depends-on ("sanity-clause"
+	       "rove")
+  :pathname "t"
+  :components ((:file "util")
+	       (:file "field")
+               (:file "schema")
+	       (:file "serde/protocol"))
+  :perform (test-op (op c)
+		    (funcall (read-from-string "rove:run") c
+			     :env '(("VALUE" . "2")
+				    ("POTATO" . "YAM")
+				    ("AGE" . "11")))))

@@ -8,104 +8,72 @@
 <body>
 <div id="sanity-clause-field-package" class="document"><h1 class="title">sanity-clause.field package</h1>
 <p>Field classes that can be used to validate data.</p>
-<p>Also contains <a class="reference ref-function" href="sanity-clause.field.html#function-get-value"><span class="ref-function">get-value</span></a>, <a class="reference ref-function" href="sanity-clause.field.html#function-deserialize"><span class="ref-function">deserialize</span></a>, and <a class="reference ref-function" href="sanity-clause.field.html#function-validate"><span class="ref-function">validate</span></a>, which represent the lifecycle of loading data from some other object.</p>
-<div id="classes" class="section"><h2><a name="classes">Classes</a></h2>
-<a id="class-field" class="target" name="class-field"></a><dl class="docutils"><dt><tt class="docutils literal">
-<span class="pre">field</span></tt></dt>
-<dd>A base class for all fields that controls how they are (de?)serialized.</dd>
-</dl>
-<a id="class-required-value-error" class="target" name="class-required-value-error"></a><dl class="docutils"><dt><tt class="docutils literal">
-<span class="pre">required-value-error</span></tt></dt>
-<dd>An error that signals a required value is missing.</dd>
-</dl>
-<a id="class-string-field" class="target" name="class-string-field"></a><dl class="docutils"><dt><tt class="docutils literal">
-<span class="pre">string-field</span></tt></dt>
-<dd>A field that contains a string.</dd>
-</dl>
-<a id="class-uuid-field" class="target" name="class-uuid-field"></a><dl class="docutils"><dt><tt class="docutils literal">
-<span class="pre">uuid-field</span></tt></dt>
-<dd>A field for values that should resemble UUIDs.</dd>
-</dl>
-<a id="class-integer-field" class="target" name="class-integer-field"></a><dl class="docutils"><dt><tt class="docutils literal">
-<span class="pre">integer-field</span></tt></dt>
-<dd>A field that holds an integer value.</dd>
-</dl>
-<a id="class-constant-field" class="target" name="class-constant-field"></a><dl class="docutils"><dt><tt class="docutils literal">
-<span class="pre">constant-field</span></tt></dt>
-<dd>A field that expects to get the same value every time.  Will throw a <a class="reference ref-class" href="sanity-clause.field.html#class-conversion-error"><span class="ref-class">conversion-error</span></a> if VALUE isn't equal to CONSTANT according to TEST.</dd>
-</dl>
-<a id="class-conversion-error" class="target" name="class-conversion-error"></a><dl class="docutils"><dt><tt class="docutils literal">
-<span class="pre">conversion-error</span></tt></dt>
-<dd>An error that signals something went wrong while calling <tt class="docutils literal">
-<span class="pre">converter</span></tt> for a field.</dd>
-</dl>
-<a id="class-member-field" class="target" name="class-member-field"></a><dl class="docutils"><dt><tt class="docutils literal">
-<span class="pre">member-field</span></tt></dt>
-<dd>A field that expects a member of a set of symbols.</dd>
-</dl>
-<a id="class-boolean-field" class="target" name="class-boolean-field"></a><dl class="docutils"><dt><tt class="docutils literal">
-<span class="pre">boolean-field</span></tt></dt>
-<dd>A field type for bolean values.</dd>
-</dl>
-<a id="class-validation-error" class="target" name="class-validation-error"></a><dl class="docutils"><dt><tt class="docutils literal">
-<span class="pre">validation-error</span></tt></dt>
-<dd>Error that indicates a field is invalid.</dd>
-</dl>
-<a id="class-real-field" class="target" name="class-real-field"></a><dl class="docutils"><dt><tt class="docutils literal">
-<span class="pre">real-field</span></tt></dt>
-<dd>A field that contains a real value (eg. possibly a float).</dd>
-</dl>
-<a id="class-email-field" class="target" name="class-email-field"></a><dl class="docutils"><dt><tt class="docutils literal">
-<span class="pre">email-field</span></tt></dt>
-<dd>A field for values that should be emails.</dd>
-</dl>
-<a id="class-timestamp-field" class="target" name="class-timestamp-field"></a><dl class="docutils"><dt><tt class="docutils literal">
-<span class="pre">timestamp-field</span></tt></dt>
-<dd>A field that contains a timestamp</dd>
-</dl>
-</div>
+<p>Also contains <a class="reference ref-function" href="sanity-clause.field.html#function__get-value"><span class="ref-function">get-value</span></a>, <a class="reference ref-function" href="sanity-clause.field.html#function__deserialize"><span class="ref-function">deserialize</span></a>, and <a class="reference ref-function" href="sanity-clause.field.html#function__validate"><span class="ref-function">validate</span></a>, which represent the lifecycle of loading data from some other object.</p>
 <div id="functions" class="section"><h2><a name="functions">Functions</a></h2>
-<a id="function-get-value" class="target" name="function-get-value"></a><dl class="docutils"><dt><tt class="docutils literal">
-<span class="pre">get-value</span></tt></dt>
-<dd>Tries to fetch the value corresponding to the field from some datastructure.  <tt class="docutils literal param">
-<span class="pre">field-name</span></tt> is used if no attribute is explicitly set on the field.</dd>
-</dl>
-<a id="function-deserialize" class="target" name="function-deserialize"></a><dl class="docutils"><dt><tt class="docutils literal">
-<span class="pre">deserialize</span></tt></dt>
-<dd>Converts the value retrieved from the raw data into the datatype the field expects to work with, or fails, raising a <a class="reference ref-class" href="sanity-clause.field.html#class-conversion-error"><span class="ref-class">conversion-error</span></a>.</dd>
-</dl>
-<a id="function-dump-field-p" class="target" name="function-dump-field-p"></a><dl class="docutils"><dt><tt class="docutils literal">
-<span class="pre">dump-field-p</span></tt></dt>
-<dd>Is this field required for serialization (fields that have flow of :dump or :both)?</dd>
-</dl>
-<a id="function-attribute-of" class="target" name="function-attribute-of"></a><dl class="docutils"><dt><tt class="docutils literal">
-<span class="pre">attribute-of</span></tt></dt>
-<dd>NIL</dd>
-</dl>
-<a id="function-error-messages-of" class="target" name="function-error-messages-of"></a><dl class="docutils"><dt><tt class="docutils literal">
-<span class="pre">error-messages-of</span></tt></dt>
-<dd>NIL</dd>
-</dl>
-<a id="function-load-field-p" class="target" name="function-load-field-p"></a><dl class="docutils"><dt><tt class="docutils literal">
-<span class="pre">load-field-p</span></tt></dt>
-<dd>Is this field required for deserialization (fields that have flow of :load or :both)?</dd>
-</dl>
-<a id="function-make-field" class="target" name="function-make-field"></a><dl class="docutils"><dt><tt class="docutils literal">
-<span class="pre">make-field</span></tt></dt>
-<dd>Make a field instance of class <tt class="docutils literal">
+<a id="function-make-field" class="target" name="function-make-field"></a><p><tt class="docutils literal">
+<span class="pre">make-field</span> <span class="pre">(type</span> <span class="pre">&amp;rest</span> <span class="pre">args)</span></tt></p>
+<p>Make a field instance of class <tt class="docutils literal">
 <span class="pre">type-FIELD</span></tt> and give it initargs <tt class="docutils literal param">
-<span class="pre">args</span></tt>.</dd>
-</dl>
-<a id="function-data-key-of" class="target" name="function-data-key-of"></a><dl class="docutils"><dt><tt class="docutils literal">
-<span class="pre">data-key-of</span></tt></dt>
-<dd>NIL</dd>
-</dl>
-<a id="function-validate" class="target" name="function-validate"></a><dl class="docutils"><dt><tt class="docutils literal">
-<span class="pre">validate</span></tt></dt>
-<dd>Run the validation checks for a given field and raise a <a class="reference ref-class" href="sanity-clause.field.html#class-validation-error"><span class="ref-class">validation-error</span></a> if it is invalid.</dd>
-</dl>
+<span class="pre">args</span></tt>.</p>
+<a id="function-dump-field-p" class="target" name="function-dump-field-p"></a><p><tt class="docutils literal">
+<span class="pre">dump-field-p</span> <span class="pre">(field)</span></tt></p>
+<p>Is this field required for serialization (fields that have flow of :dump or :both)?</p>
+<a id="function-load-field-p" class="target" name="function-load-field-p"></a><p><tt class="docutils literal">
+<span class="pre">load-field-p</span> <span class="pre">(field)</span></tt></p>
+<p>Is this field required for deserialization (fields that have flow of :load or :both)?</p>
 </div>
-<hr class ="docutils footer" /><div class="footer">Generated on : Thu, 15 Nov 2018 17:24:20 .
+<div id="generic-functions" class="section"><h2><a name="generic-functions">Generic Functions</a></h2>
+<a id="generic-function-get-value" class="target" name="generic-function-get-value"></a><p><tt class="docutils literal">
+<span class="pre">get-value</span> <span class="pre">(FIELD</span> <span class="pre">OBJECT</span> <span class="pre">&amp;OPTIONAL</span> <span class="pre">FIELD-NAME)</span></tt> Tries to fetch the value corresponding to the field from some datastructure.  <tt class="docutils literal param">
+<span class="pre">field-name</span></tt> is used if no attribute is explicitly set on the field. .. _generic-function__validate:</p>
+<p><tt class="docutils literal">
+<span class="pre">validate</span> <span class="pre">(FIELD</span> <span class="pre">VALUE)</span></tt> Run the validation checks for a given field and raise a <a class="reference ref-class" href="sanity-clause.field.html#class__validation-error"><span class="ref-class">validation-error</span></a> if it is invalid. .. _generic-function__deserialize:</p>
+<p><tt class="docutils literal">
+<span class="pre">deserialize</span> <span class="pre">(FIELD</span> <span class="pre">VALUE)</span></tt> Converts the value retrieved from the raw data into the datatype the field expects to work with, or fails, raising a <a class="reference ref-class" href="sanity-clause.field.html#class__conversion-error"><span class="ref-class">conversion-error</span></a>.</p>
+</div>
+<div id="classes" class="section"><h2><a name="classes">Classes</a></h2>
+<a id="condition-required-value-error" class="target" name="condition-required-value-error"></a><p><tt class="docutils literal">
+<span class="pre">required-value-error</span></tt></p>
+<p>An error that signals a required value is missing. .. _condition__conversion-error:</p>
+<p><tt class="docutils literal">
+<span class="pre">conversion-error</span></tt></p>
+<p>An error that signals something went wrong while calling <tt class="docutils literal">
+<span class="pre">converter</span></tt> for a field. .. _condition__validation-error:</p>
+<p><tt class="docutils literal">
+<span class="pre">validation-error</span></tt></p>
+<p>Error that indicates a field is invalid. .. _class__timestamp-field:</p>
+<p><tt class="docutils literal">
+<span class="pre">timestamp-field</span></tt></p>
+<p>A field that contains a timestamp .. _class__real-field:</p>
+<p><tt class="docutils literal">
+<span class="pre">real-field</span></tt></p>
+<p>A field that contains a real value (eg. possibly a float). .. _class__integer-field:</p>
+<p><tt class="docutils literal">
+<span class="pre">integer-field</span></tt></p>
+<p>A field that holds an integer value. .. _class__constant-field:</p>
+<p><tt class="docutils literal">
+<span class="pre">constant-field</span></tt></p>
+<p>A field that expects to get the same value every time.  Will throw a <a class="reference ref-class" href="sanity-clause.field.html#class__conversion-error"><span class="ref-class">conversion-error</span></a> if VALUE isn't equal to CONSTANT according to TEST. .. _class__uuid-field:</p>
+<p><tt class="docutils literal">
+<span class="pre">uuid-field</span></tt></p>
+<p>A field for values that should resemble UUIDs. .. _class__email-field:</p>
+<p><tt class="docutils literal">
+<span class="pre">email-field</span></tt></p>
+<p>A field for values that should be emails. .. _class__boolean-field:</p>
+<p><tt class="docutils literal">
+<span class="pre">boolean-field</span></tt></p>
+<p>A field type for bolean values. .. _class__member-field:</p>
+<p><tt class="docutils literal">
+<span class="pre">member-field</span></tt></p>
+<p>A field that expects a member of a set of symbols. .. _class__string-field:</p>
+<p><tt class="docutils literal">
+<span class="pre">string-field</span></tt></p>
+<p>A field that contains a string. .. _class__field:</p>
+<p><tt class="docutils literal">
+<span class="pre">field</span></tt></p>
+<p>A base class for all fields that controls how they are (de?)serialized.</p>
+</div>
+<hr class ="docutils footer" /><div class="footer">Generated on : Sun, 18 Nov 2018 17:35:20 .
 Generated by cl-docutils 0.1.1 from <a class="reference" href="http://docutils.sourceforge.net/rst.html"><span>restructured text</span></a> source.
 </div>
 </div>
