@@ -26,6 +26,8 @@ for example::
 
 To learn more about what fields exist, check out :package:`sanity-clause.field`.
 
-To see more validation functions, check out :package:`sanity-clause.validator`."))
+To see more validation functions, check out :package:`sanity-clause.validator`.
+
+To see how to load a schema from a file or keyword spec, check out :package:`sanity-clause.schema`."))
 
 (in-package #:sanity-clause)
