@@ -1,7 +1,7 @@
 (defsystem sanity-clause
   :author "Matt Novenstern"
   :license "LLGPLv3+"
-  :version "0.2.0"
+  :version "0.3.0"
   :depends-on ("alexandria"
 	       "trivial-types"
                "cl-arrows"
