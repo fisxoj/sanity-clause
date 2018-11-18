@@ -1,13 +1,15 @@
-(defpackage t.sanity-clause.util
+(defpackage sanity-clause/test.util
   (:use #:cl
 	#:alexandria
 	#:rove
 	#:sanity-clause.util))
 
-(in-package #:t.sanity-clause.util)
+(in-package #:sanity-clause/test.util)
+
 
 (defclass test-class ()
   ((value :initarg :value)))
+
 
 (deftest test-get-value
   (let ((alist '((:value . 2)))

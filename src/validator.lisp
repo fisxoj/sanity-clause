@@ -8,10 +8,20 @@
 	   #:real
 	   #:email
 	   #:uuid
-	   #:not-empty)
+	   #:not-empty
+
+           #:make-validator)
   (:documentation "Some validation functions that can be used with fields to make sure data has certain properties."))
 
 (in-package :sanity-clause.validator)
+
+
+(defun make-validator (keyword-spec)
+  "Find a validator function by keyword-spec and return the function represented by the spec."
+
+  (let ((keyword-spec (ensure-list keyword-spec)))
+
+    (lambda (value) (apply (find-symbol (string-upcase (car keyword-spec)) (find-package :sanity-clause.validator)) value (cdr keyword-spec)))))
 
 
 (defmacro convert-validate-validator (&body body)
