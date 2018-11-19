@@ -20,8 +20,13 @@ env:
     - LISP=clisp
     - LISP=ecl
     - LISP=allegro
-    # - LISP=abcl
-    # - LISP=cmucl
+    - LISP=abcl
+    - LISP=cmucl
+
+matrix:
+  allow_failures:
+    - LISP=abcl
+    - LISP=cmucl
 
 install:
   # Install Roswell
