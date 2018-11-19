@@ -26,8 +26,9 @@ env:
 install:
   # Install Roswell
   - curl -L https://raw.githubusercontent.com/roswell/roswell/release/scripts/install-for-ci.sh | sh
+  - ros install Shinmera/dissect
   - ros install fukamachi/rove
-  - git clone https://github.com/fisxoj/validate ~/lisp/validate
+  - ros install fisxoj/validate
 
 cache:
   directories:
