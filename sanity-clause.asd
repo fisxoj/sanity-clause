@@ -27,6 +27,7 @@ Eventually, there will be an interface that allows creating schemas attached to 
 
 (defsystem sanity-clause/test
   :depends-on ("sanity-clause"
+	       "cl-coveralls"
 	       "rove")
   :pathname "t"
   :components ((:file "test-with-coverage")
