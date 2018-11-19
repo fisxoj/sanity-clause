@@ -29,12 +29,13 @@ Eventually, there will be an interface that allows creating schemas attached to 
   :depends-on ("sanity-clause"
 	       "rove")
   :pathname "t"
-  :components ((:file "util")
+  :components ((:file "test-with-coverage")
+	       (:file "util")
 	       (:file "field")
                (:file "schema")
 	       (:file "serde/protocol"))
   :perform (test-op (op c)
-		    (funcall (read-from-string "rove:run") c
+		    (funcall (read-from-string "hax.rove-with-coverage:run") c
 			     :env '(("VALUE" . "2")
 				    ("POTATO" . "YAM")
 				    ("AGE" . "11")))))
