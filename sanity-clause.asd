@@ -40,3 +40,10 @@ Eventually, there will be an interface that allows creating schemas attached to 
 			     :env '(("VALUE" . "2")
 				    ("POTATO" . "YAM")
 				    ("AGE" . "11")))))
+
+
+;; (defsystem sanity-clause-json
+;;   :depends-on ("sanity-clause"
+;; 	       "jonathan")
+;;   :pathname "src/serde/"
+;;   :components ((:file "json")))
