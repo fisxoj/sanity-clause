@@ -1,5 +1,5 @@
 (defsystem sanity-clause-json
   :depends-on ("sanity-clause"
 	       "jonathan")
-  :pathame "src/serde/"
+  :pathname "src/serde/"
   :components ((:file "json")))
