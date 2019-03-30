@@ -103,28 +103,42 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
   (if-let ((class (find-class (find-symbol (concatenate 'string (string-upcase type) "-FIELD")
                                            (find-package :sanity-clause.field)))))
     class
-    (error (format nil "No field class named ~@(~A~)-FIELD" type))))
+    (error "No field class named ~@(~A~)-FIELD" type)))
 
 
 (defun make-field (type &rest args)
   "Make a field instance of class ``type-FIELD`` and give it initargs :param:`args`."
 
-    (apply #'make-instance (find-field type) args))
+  (apply #'make-instance
+         (etypecase type
+           ((or symbol string) (find-field type))
+           (class type))
+         args))
 
 
-(defclass string-field (field)
+(defmacro define-final-class (name direct-superclasses direct-slots &rest options)
+  "A macro for definining classes that are finalized after definition."
+
+  `(->
+    (defclass ,name ,direct-superclasses
+      ,direct-slots
+      ,@options)
+    c2mop:ensure-finalized))
+
+
+(define-final-class string-field (field)
   ()
   (:documentation "A field that contains a string."))
 
 
-(defclass member-field (field)
+(define-final-class member-field (field)
   ((members :initarg :members
             :reader members-of
             :initform (error "A member field requires a list of symbols that are acceptable members.")))
   (:documentation "A field that expects a member of a set of symbols."))
 
 
-(defclass list-field (field)
+(define-final-class list-field (field)
   ((element-field :type field
                   :initarg :element-field
                   :reader element-field-of
@@ -132,7 +146,7 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
   (:documentation "A field that contains a list of values satsified by another field."))
 
 
-(defclass nested-field (field)
+(define-final-class nested-field (field)
   ((nested-field :type field
                  :initarg :schema
 		 :reader schema-of
@@ -140,22 +154,22 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
 		 :documentation "A field that represents a complex object located at this field.")))
 
 
-(defclass boolean-field (field)
+(define-final-class boolean-field (field)
   ()
   (:documentation "A field type for bolean values."))
 
 
-(defclass email-field (string-field)
+(define-final-class email-field (string-field)
   ((validator :initform 'sanity-clause.validator:email))
   (:documentation "A field for values that should be emails."))
 
 
-(defclass uuid-field (string-field)
+(define-final-class uuid-field (string-field)
   ((validator :initform 'sanity-clause.validator:uuid))
   (:documentation "A field for values that should resemble UUIDs."))
 
 
-(defclass constant-field (field)
+(define-final-class constant-field (field)
   ((constant :initarg :constant
              :reader constant-value-of
              :documentation "The constant value to be serialized or deserialized.")
@@ -166,17 +180,17 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
   (:documentation "A field that expects to get the same value every time.  Will throw a :class:`conversion-error` if VALUE isn't equal to CONSTANT according to TEST."))
 
 
-(defclass integer-field (field)
+(define-final-class integer-field (field)
   ((validator :initform 'sanity-clause.validator:int))
   (:documentation "A field that holds an integer value."))
 
 
-(defclass real-field (field)
+(define-final-class real-field (field)
   ()
   (:documentation "A field that contains a real value (eg. possibly a float)."))
 
 
-(defclass timestamp-field (field)
+(define-final-class timestamp-field (field)
   ()
   (:documentation "A field that contains a timestamp"))
 

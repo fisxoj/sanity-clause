@@ -36,7 +36,9 @@ E.g. (let ((string-field (make-field 'string))
   (ok (sanity-clause.field:find-field :string)
       "can find a field by symbol.")
   (ok (sanity-clause.field:find-field "real")
-      "can find a field by string."))
+      "can find a field by string.")
+  (ok (signals (sanity-clause.field:find-field nil))
+      "raises an error when it can't find the given field."))
 
 (deftest test-get-value
   (testing "missing values"

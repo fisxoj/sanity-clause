@@ -5,6 +5,7 @@
   :depends-on ("alexandria"
 	       "trivial-types"
                "cl-arrows"
+               "closer-mop"
 	       "str"
 	       "validate"
 	       "parse-float"
@@ -16,6 +17,9 @@
                (:file "schema")
 	       (:module "serde"
 		:components ((:file "protocol")))
+               (:module "metaclass"
+                :components ((:file "types")
+                             (:file "class")))
 	       (:file "sanity-clause"))
   :long-description "Sanity clause is a data validation/contract library that can be used to collect and validate information.  You might use it for configuration data, or validating data from an api response, or documents from a datastore.
 
@@ -32,6 +36,9 @@ Eventually, there will be an interface that allows creating schemas attached to 
   :components ((:file "util")
 	       (:file "field")
                (:file "schema")
+               (:module "metaclass"
+                :components ((:file "types")
+                             (:file "class")))
 	       (:file "serde/protocol"))
   :perform (test-op (op c)
 		    (funcall (read-from-string "rove:run") c
