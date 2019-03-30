@@ -32,6 +32,12 @@ E.g. (let ((string-field (make-field 'string))
 (defclass inventory ()
   ((potato-count :reader potato-count-of :initarg :count)))
 
+(deftest test-find-field
+  (ok (sanity-clause.field:find-field :string)
+      "can find a field by symbol.")
+  (ok (sanity-clause.field:find-field "real")
+      "can find a field by string."))
+
 (deftest test-get-value
   (testing "missing values"
     (let ((default-field (make-instance 'field :default 3 :attribute 'potato-count))
