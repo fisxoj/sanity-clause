@@ -74,6 +74,30 @@
   ())
 
 
+(defmethod shared-initialize :after ((class validated-metaclass) slot-names &key &allow-other-keys)
+
+  (c2mop:ensure-method (ensure-generic-function 'make-instance)
+                       '(lambda (class &rest initargs &key &allow-other-keys)
+                         (let (validated-initargs)
+                           (dolist (slot (c2mop:class-slots class))
+                             (let ((field (field-of slot)))
+
+                               (when (sanity-clause.field:load-field-p field)
+                                 (let ((value (->>
+                                               (sanity-clause.field:get-value field initargs (string-downcase (c2mop:slot-definition-name class)))
+                                               (sanity-clause.field:deserialize field))))
+
+                                   (sanity-clause.field:validate field value)
+
+                                   (appendf validated-initargs
+                                            (list (first (c2mop:slot-definition-initargs field)) value))))))
+
+                           (apply #'call-next-method (print validated-initargs))))
+                       :qualifiers '(:around)
+                       :specializers (list class)))
+
+
+
 (defmethod c2mop:validate-superclass ((mc validated-metaclass) (c standard-object))
   (declare (ignore c mc))
 
