@@ -4,12 +4,6 @@
 
 (in-package :sanity-clause.metaclass.class)
 
-(defclass validated-slot-definition (c2mop:standard-direct-slot-definition)
-  ((field :accessor field-of
-          :type sanity-clause.field:field
-          :initarg :field-instance)))
-
-
 (defun class-initargs (class)
   "Collect the initargs for :param:`class`, which is either a class or a symbol naming a class."
 
@@ -86,6 +80,27 @@
   t)
 
 
+(defclass validated-slot-definition ()
+  ((field :accessor field-of
+          :type sanity-clause.field:field
+          :initarg :field-instance)))
+
+
+(defclass validated-direct-slot-definition (validated-slot-definition
+                                            c2mop:standard-direct-slot-definition)
+  ())
+
+
+(defclass validated-effective-slot-definition (validated-slot-definition
+                                               c2mop:standard-effective-slot-definition)
+  ())
+
+
 (defmethod c2mop:direct-slot-definition-class ((class validated-metaclass) &key)
 
-  'validated-slot-definition)
+  'validated-direct-slot-definition)
+
+
+(defmethod c2mop:effective-slot-definition-class ((class validated-metaclass) &key)
+
+  'validated-effective-slot-definition)
