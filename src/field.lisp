@@ -196,20 +196,21 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
 
 
 (define-condition field-error (error)
-  ((message :type string
-            :initarg :message
-            :reader message-of)
-   (field :type field
+  ((field :type field
 	  :initarg :field
-	  :reader field-of)
-   (value :type t
-	  :initarg :value
-	  :reader value-of
-	  :documentation "The value that failed validation."))
+	  :reader field-of))
   (:documentation "Base class for all errors thrown by :package:`sanity-clause.field`."))
 
 
-(define-condition validation-error (field-error)
+(define-condition value-error (error)
+  ((value :type t
+           :initarg :value
+           :reader value-of
+          :documentation "The value that failed validation."))
+  (:documentation "Base class for errors involving values."))
+
+
+(define-condition validation-error (field-error value-error)
   ((error-messages :type list
 		   :initarg :error-messages
 		   :initform nil
@@ -219,13 +220,13 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
 
 
 (defmethod print-object ((condition validation-error) stream)
-  (format stream "~& Error validating value ~A in field ~A:~%~{* ~a~}~%"
+  (format stream "Error validating value ~A in field ~A:~%~{* ~a~}~%"
 	  (value-of condition)
 	  (field-of condition)
 	  (error-messages-of condition)))
 
 
-(define-condition conversion-error (field-error)
+(define-condition conversion-error (field-error value-error)
   ((raised-error :initarg :from-error
 		 :reader raised-error-of
 		 :documentation "The error that was caught while converting."))
@@ -233,7 +234,7 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
 
 
 (defmethod print-object ((condition conversion-error) stream)
-  (format stream "~& Error converting value for field ~A: ~%~A~%"
+  (format stream "Error converting value for field ~A: ~%~A~%"
 	  (field-of condition)
 	  (raised-error-of condition)))
 
@@ -242,7 +243,7 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
   ((missing-field-name :type (or symbol string)
 		       :initarg :field-name
 		       :reader missing-field-name-of
-		       :documentation "The name of the field that is missinga required value."))
+		       :documentation "The name of the field that is missing a required value."))
   (:documentation "An error that signals a required value is missing."))
 
 
@@ -264,6 +265,7 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
 (defmacro map-error (into-error-class &body body)
   `(handler-case (progn ,@body)
      (error (e)
+       (format t "~a" e)
        (error ',into-error-class :from-error e
 				 :field field
 				 :value value))))
@@ -273,6 +275,8 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
   (:documentation "Converts the value retrieved from the raw data into the datatype the field expects to work with, or fails, raising a :class:`conversion-error`.")
 
   (:method ((field field) value)
+    (declare (ignore field))
+
     value)
 
   ;; This also should cover some child fields like email
@@ -299,9 +303,9 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
 	((or string symbol)
 	 (if-let ((member (find value (members-of field) :test #'string-equal)))
 	   member
-	   (error 'conversion-error :message (format nil "Value \"~a\" couldn't be found in set ~a"
-						     value
-						     (members-of field))))))))
+	   (error (format nil "Value \"~a\" couldn't be found in set ~a"
+                          value
+                          (members-of field))))))))
 
   (:method ((field boolean-field) value)
     (map-error conversion-error
@@ -309,7 +313,7 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
 	(string (cond
 		  ((member value '("y" "yes" "t" "true"  "on"  "enable" ) :test #'string-equal) t)
 		  ((member value '("n" "no"  "f" "false" "off" "disable") :test #'string-equal) nil)
-		  (t (error 'conversion-error "couldn't convert ~a to a boolean." value))))
+		  (t (error "couldn't convert ~a to a boolean." value))))
 	(boolean value))))
 
   (:method ((field timestamp-field) value)
