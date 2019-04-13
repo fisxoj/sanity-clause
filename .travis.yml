@@ -29,7 +29,7 @@ matrix:
 install:
   # Install Roswell
   - curl -L https://raw.githubusercontent.com/snmsts/roswell/release/scripts/install-for-ci.sh | sh
-  - ros install fukamachi/rove
+  - ros install fisxoj/rove
   - git clone https://github.com/fisxoj/validate ~/lisp/validate
 
 cache:
