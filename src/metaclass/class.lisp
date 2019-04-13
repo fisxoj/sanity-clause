@@ -53,49 +53,55 @@
     (multiple-value-bind (field-initargs others)
         (take-properties (class-initargs field-class) initargs)
 
-      (let ((field (apply #'sanity-clause:make-field
-                          field-class
-                          (merge-plist '(:validator) field-initargs-from-type field-initargs))))
+      ;; Try to set data-key based on an initarg
+      ;; FIXME: probably better to be smart about which initarg we use
+      ;; or possibly refactor to allow many possible data sources.
+      (let ((data-key (car (getf initargs :initargs))))
 
-        ;; Remove this one special property, too, which isn't an initarg for either the
-        ;; field or the class.
-        (remove-from-plist others :field-type)
+        (let ((field (apply #'sanity-clause.field:make-field
+                            field-class
+                            (list* :data-key data-key
+                                   (merge-plist '(:validator) field-initargs-from-type field-initargs)))))
 
-        (list* :field-instance field
-               others)))))
+          ;; Remove this one special property, too, which isn't an initarg for either the
+          ;; field or the class.
+          (remove-from-plist others :field-type)
 
-
-(defmethod shared-initialize :around ((slot validated-slot-definition) slot-names &rest initargs &key &allow-other-keys)
-
-  (apply #'call-next-method slot slot-names (initargs-for-slot initargs)))
+          (list* :field-instance field
+                 others))))))
 
 
 (defclass validated-metaclass (standard-class)
   ())
 
 
-(defmethod shared-initialize :after ((class validated-metaclass) slot-names &key &allow-other-keys)
+(defmethod make-instance :around ((class validated-metaclass) &rest initargs)
 
-  (c2mop:ensure-method (ensure-generic-function 'make-instance)
-                       '(lambda (class &rest initargs &key &allow-other-keys)
-                         (let (validated-initargs)
-                           (dolist (slot (c2mop:class-slots class))
-                             (let ((field (field-of slot)))
+  (c2mop:ensure-finalized class)
 
-                               (when (sanity-clause.field:load-field-p field)
-                                 (let ((value (->>
-                                               (sanity-clause.field:get-value field initargs (string-downcase (c2mop:slot-definition-name class)))
-                                               (sanity-clause.field:deserialize field))))
+  (let ((validated-initargs nil)
+        (data-source (if (and (= 2 (length initargs))
+                              (eq (first initargs) :source)
+                              (eq (second initargs) :env))
+                         :env
+                         initargs)))
 
-                                   (sanity-clause.field:validate field value)
+    (dolist (slot (c2mop:class-slots class))
+      (let ((field (field-of slot)))
 
-                                   (appendf validated-initargs
-                                            (list (first (c2mop:slot-definition-initargs field)) value))))))
+        (when (and (sanity-clause.field:load-field-p field)
+                   ;; Don't bother trying to load something we don't have a data-key for
+                   (sanity-clause.field:data-key-of field))
+          (let ((value (->>
+                        (sanity-clause.field:get-value field data-source)
+                        (sanity-clause.field:deserialize field))))
 
-                           (apply #'call-next-method (print validated-initargs))))
-                       :qualifiers '(:around)
-                       :specializers (list class)))
+            (sanity-clause.field:validate field value)
 
+            (appendf validated-initargs
+                     (list (sanity-clause.field:data-key-of field) value))))))
+
+    (apply #'call-next-method class validated-initargs)))
 
 
 (defmethod c2mop:validate-superclass ((mc validated-metaclass) (c standard-object))
@@ -128,3 +134,21 @@
 (defmethod c2mop:effective-slot-definition-class ((class validated-metaclass) &key)
 
   'validated-effective-slot-definition)
+
+
+(defmethod shared-initialize :around ((slot validated-direct-slot-definition) slot-names &rest initargs &key &allow-other-keys)
+
+  ;; This cleverly extracts the initargs for the field that will be stored on the slot
+  ;; and returns the other arguments that are the usual initargs for a standard-direct-slot
+  (apply #'call-next-method slot slot-names (initargs-for-slot initargs)))
+
+
+(defmethod c2mop:compute-effective-slot-definition :around ((class validated-metaclass) name direct-slot-definitions)
+
+  ;; Make sure we set the field to the one defined on the most-specific (left-most)
+  ;; direct slot definiton inherited by this class.
+  (let ((effective-slot (call-next-method)))
+
+    (setf (field-of effective-slot) (some #'field-of direct-slot-definitions))
+
+    effective-slot))
