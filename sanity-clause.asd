@@ -14,9 +14,8 @@
   :components ((:file "util")
                (:file "validator")
 	       (:file "field")
+               (:file "loadable-schema")
                (:file "schema")
-	       (:module "serde"
-		:components ((:file "protocol")))
                (:module "metaclass"
                 :components ((:file "types")
                              (:file "class")))
@@ -35,11 +34,11 @@ Eventually, there will be an interface that allows creating schemas attached to 
   :pathname "t"
   :components ((:file "util")
 	       (:file "field")
+               (:file "loadable-schema")
                (:file "schema")
                (:module "metaclass"
                 :components ((:file "types")
-                             (:file "class")))
-	       (:file "serde/protocol"))
+                             (:file "class"))))
   :perform (test-op (op c)
 		    (funcall (read-from-string "rove:run") c
 			     :env '(("VALUE" . "2")
