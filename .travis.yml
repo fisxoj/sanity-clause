@@ -15,18 +15,21 @@ env:
     - ROSWELL_INSTALL_DIR=$HOME/.roswell
     - COVERAGE_EXCLUDE=t
   matrix:
-    - LISP=sbcl-bin COVERALLS=true
+    - LISP=sbcl-bin COVERAGE=1
     - LISP=ccl-bin
-    - LISP=clisp
     - LISP=ecl
     - LISP=allegro
-    # - LISP=abcl
-    # - LISP=cmucl
+    - LISP=abcl
+
+matrix:
+  allow_failures:
+    - env: LISP=clisp
+    - env: LISP=abcl
 
 install:
   # Install Roswell
   - curl -L https://raw.githubusercontent.com/snmsts/roswell/release/scripts/install-for-ci.sh | sh
-  - ros install fukamachi/rove
+  - ros install fisxoj/rove
   - git clone https://github.com/fisxoj/validate ~/lisp/validate
 
 cache:
