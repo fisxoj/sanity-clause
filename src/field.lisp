@@ -277,7 +277,6 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
 (defmacro map-error (into-error-class &body body)
   `(handler-case (progn ,@body)
      (error (e)
-       (format t "~a" e)
        (error ',into-error-class :from-error e
 				 :field field
 				 :value value))))
