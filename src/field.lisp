@@ -315,9 +315,9 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
 	((or string symbol)
 	 (if-let ((member (find value (members-of field) :test #'string-equal)))
 	   member
-	   (error (format nil "Value \"~a\" couldn't be found in set ~a"
-                          value
-                          (members-of field))))))))
+	   (error "Value \"~a\" couldn't be found in set ~a"
+                  value
+                  (members-of field)))))))
 
   (:method ((field boolean-field) value)
     (map-error conversion-error
