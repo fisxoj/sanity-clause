@@ -139,7 +139,7 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
 
 
 (define-final-class nested-element ()
-  ((element-type :type field
+  ((element-type :type (or field symbol)
                  :initarg :element-type
                  :initform (error "A nested field requires an element-type to deserialize members to.")
                  :reader element-type-of
