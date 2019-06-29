@@ -115,8 +115,8 @@
 
 (deftest test-inheritance
 
-  (testing "Slots with the same name"
-    (defclass a ()
+  (testing "Redefining slots with the same name"
+    (defclass b ()
       ((pie :type symbol
             :field-type :member
             :members (:apple :cherry)
