@@ -102,6 +102,8 @@
   (c2mop:ensure-finalized class)
 
   (let ((validated-initargs nil)
+        ;; There's one special case here to read values from environment variables if the &rest args
+        ;; passed here are '(:source :env)
         (data-source (if (and (= 2 (length initargs))
                               (eq (first initargs) :source)
                               (eq (second initargs) :env))
