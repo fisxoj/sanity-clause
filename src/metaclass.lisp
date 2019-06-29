@@ -1,8 +1,8 @@
-(defpackage :sanity-clause.metaclass.class
+(defpackage :sanity-clause.metaclass
   (:use :cl :alexandria :cl-arrows)
   (:export #:validated-metaclass))
 
-(in-package :sanity-clause.metaclass.class)
+(in-package :sanity-clause.metaclass)
 
 (defun class-initargs (class)
   "Collect the initargs for :param:`class`, which is either a class or a symbol naming a class."
@@ -40,15 +40,37 @@
               others2))))
 
 
+(defun slot-type-to-field-initargs (typespec)
+  (let ((typespec (ensure-list typespec)))
+    (case (car typespec)
+      (integer
+       (values (find-class 'sanity-clause.field:integer-field)
+               (list :validator (list (lambda (v) (sanity-clause.validator:int v :min (second typespec) :max (third typespec)))))))
+
+      (string
+       (values (find-class 'sanity-clause.field:string-field)
+               (when-let ((length (second typespec)))
+                 (list :validator (list (lambda (v) (sanity-clause.validator:str v :max-length length :min-length length)))))))
+
+      (real (values (find-class 'sanity-clause.field:real-field) nil))
+
+      ;; Try to identify classes that are validated-metaclass classes, which can be used as fields
+      ;; when composing classes with others.
+      (otherwise
+       (if-let ((field-class (find-class (car typespec) nil)))
+         (when (eq (class-of field-class) (find-class 'sanity-clause.metaclass:validated-metaclass))
+           field-class))))))
+
+
 (defun initargs-for-slot (initargs)
-  "Collects arguments for and initializes a field and then returns it along with the cleaned up :param:`initargs`.  This list can then be passed as the initargs to :class:`validated-slot-definition`."
+  "Collects arguments for and initializes a field and then returns it along with the cleaned up :param:`initargs`.  This list can then be passed as the initargs to :class:`validated-field-slot-definition`."
 
   (multiple-value-bind (field-class field-initargs-from-type)
       ;; Use the value of :field-type preferentially to whatever we
       ;; might or might not have derived from :type
       (if-let ((field-type (getf initargs :field-type)))
         (sanity-clause.field:find-field field-type)
-        (sanity-clause.metaclass.types:slot-type-to-field-initargs (getf initargs :type)))
+        (slot-type-to-field-initargs (getf initargs :type)))
 
     (multiple-value-bind (field-initargs others)
         (take-properties (class-initargs field-class) initargs)
@@ -87,11 +109,13 @@
                          initargs)))
 
     (dolist (slot (c2mop:class-slots class))
+
       (let ((field (field-of slot)))
 
         (when (and (sanity-clause.field:load-field-p field)
                    ;; Don't bother trying to load something we don't have a data-key for
                    (sanity-clause.field:data-key-of field))
+
           (let ((value (->>
                         (sanity-clause.field:get-value field data-source)
                         (sanity-clause.field:deserialize field))))

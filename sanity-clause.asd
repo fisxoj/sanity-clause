@@ -16,9 +16,7 @@
 	       (:file "field")
                (:file "loadable-schema")
                (:file "schema")
-               (:module "metaclass"
-                :components ((:file "types")
-                             (:file "class")))
+               (:file "metaclass")
 	       (:file "sanity-clause"))
   :long-description "Sanity clause is a data validation/contract library that can be used to collect and validate information.  You might use it for configuration data, or validating data from an api response, or documents from a datastore.
 
@@ -36,9 +34,7 @@ Eventually, there will be an interface that allows creating schemas attached to 
 	       (:file "field")
                (:file "loadable-schema")
                (:file "schema")
-               (:module "metaclass"
-                :components ((:file "types")
-                             (:file "class"))))
+               (:file "metaclass"))
   :perform (test-op (op c)
 		    (funcall (read-from-string "rove:run") c
 			     :env '(("VALUE" . "2")
