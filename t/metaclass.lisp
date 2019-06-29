@@ -183,7 +183,7 @@
 
   (testing "list of pies"
     (let ((pie-list (make-instance 'pie-list :pies '((:pie "peach") (:pie "peach") (:pie "key-lime")))))
-      (setq cl-user::potato pie-list)
+
       (ok pie-list
           "Can create a nested class with pies in it.")
 
@@ -195,14 +195,14 @@
 
 
 (deftest test-slot-type-to-field-initargs
-  (ok (eq (sanity-clause.metaclass:slot-type-to-field-initargs '(integer 0 10)) (find-class 'sanity-clause.field:integer-field))
+  (ok (eq (sanity-clause.metaclass::slot-type-to-field-initargs '(integer 0 10)) (find-class 'sanity-clause.field:integer-field))
       "finds a field type for (INTEGER 0 10).")
 
-  (ok (eq (sanity-clause.metaclass:slot-type-to-field-initargs 'integer) (find-class 'sanity-clause.field:integer-field))
+  (ok (eq (sanity-clause.metaclass::slot-type-to-field-initargs 'integer) (find-class 'sanity-clause.field:integer-field))
       "finds a field type for INTEGER.")
 
-  (ok (eq (sanity-clause.metaclass:slot-type-to-field-initargs '(string 10)) (find-class 'sanity-clause.field:string-field))
+  (ok (eq (sanity-clause.metaclass::slot-type-to-field-initargs '(string 10)) (find-class 'sanity-clause.field:string-field))
       "finds a field type for (STRING 10).")
 
-  (ok (eq (sanity-clause.metaclass:slot-type-to-field-initargs 'string) (find-class 'sanity-clause.field:string-field))
+  (ok (eq (sanity-clause.metaclass::slot-type-to-field-initargs 'string) (find-class 'sanity-clause.field:string-field))
       "finds a field type for STRING."))

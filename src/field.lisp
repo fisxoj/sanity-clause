@@ -77,7 +77,7 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
 	     :initarg :required
 	     :initform nil
 	     :reader required-p
-	     :documentation "Is this field required?  Casuse the field to fail validation if it's not filled."))
+	     :documentation "Is this field required?  Cause the field to fail validation if it's not filled."))
   (:documentation "A base class for all fields that controls how they are (de?)serialized."))
 
 
@@ -138,20 +138,32 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
   (:documentation "A field that expects a member of a set of symbols."))
 
 
-(define-final-class list-field (field)
-  ((element-field :type field
-                  :initarg :element-field
-                  :reader element-field-of
-                  :documentation "The field that respresents the elements of the list."))
+(define-final-class nested-element ()
+  ((element-type :type field
+                 :initarg :element-type
+                 :initform (error "A nested field requires an element-type to deserialize members to.")
+                 :reader element-type-of
+                 :documentation "The field that respresents the elements of the list.")))
+
+(define-final-class list-field (field nested-element)
+  ()
   (:documentation "A field that contains a list of values satsified by another field."))
 
 
-(define-final-class nested-field (field)
-  ((nested-field :type field
-                 :initarg :schema
-		 :reader schema-of
-		 :initform (error "A nested field requires a nested field instance.")
-		 :documentation "A field that represents a complex object located at this field.")))
+
+;; (defmethod print-object ((o list-field) stream)
+;;   (print-unreadable-object (o stream :type t :identity t)
+;;     (format stream "element-type: ~a" (element-type-of o))))
+
+
+(define-final-class nested-field (field nested-element)
+  ()
+  (:documentation "A field that represents a complex object located at this slot."))
+
+
+;; (defmethod print-object ((o nested-field) stream)
+;;   (print-unreadable-object (o stream :type t :identity t)
+;;     (format stream "element-type: ~a" (element-type-of o))))
 
 
 (define-final-class boolean-field (field)
@@ -204,8 +216,8 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
 
 (define-condition value-error (error)
   ((value :type t
-           :initarg :value
-           :reader value-of
+          :initarg :value
+          :reader value-of
           :documentation "The value that failed validation."))
   (:documentation "Base class for errors involving values."))
 
@@ -318,7 +330,24 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
 
   (:method ((field timestamp-field) value)
     (map-error conversion-error
-      (local-time:parse-timestring value))))
+      (local-time:parse-timestring value)))
+
+
+  ;; For fields that inherit from nested-element, this behavior is a
+  ;; bit circular.  The value should be the initargs for an inner
+  ;; schema.
+  (:method ((field nested-field) value)
+    (map-error conversion-error
+      (with-slots (element-type) field
+        (apply #'make-instance element-type value))))
+
+
+  (:method ((field list-field) value)
+    (map-error conversion-error
+      (etypecase value
+        (trivial-types:proper-list
+         (with-slots (element-type) field
+           (mapcar (lambda (item) (apply #'make-instance element-type item)) value)))))))
 
 
 (defgeneric serialize (field value)
@@ -337,6 +366,7 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
 
 			      collecting (funcall validator value))
 			    (remove-if #'null))))
+
       (error 'validation-error :error-messages errors
 			       :field field
 			       :value value)))

@@ -25,7 +25,7 @@
   ;;   (->>
   ;;    (let (initargs)
   ;;      (dolist (slot (c2mop:class-slots class))
-  ;;        (let ((field (sanity-clause.metaclass.class::field-of slot)))
+  ;;        (let ((field (sanity-clause.metaclass::field-of slot)))
 
   ;;          (when (sanity-clause.field:load-field-p field)
   ;;            (let ((value (->>
