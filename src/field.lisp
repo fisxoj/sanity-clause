@@ -8,6 +8,7 @@
 	   #:load-field-p
 	   #:dump-field-p
 
+           #:find-field
 	   #:make-field
 
 	   ;; Fields
@@ -76,7 +77,7 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
 	     :initarg :required
 	     :initform nil
 	     :reader required-p
-	     :documentation "Is this field required?  Casuse the field to fail validation if it's not filled."))
+	     :documentation "Is this field required?  Cause the field to fail validation if it's not filled."))
   (:documentation "A base class for all fields that controls how they are (de?)serialized."))
 
 
@@ -96,58 +97,91 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
       (member '(:both :dump))))
 
 
+(defun find-field (type)
+  "Find the class that corresponds to :param:`type` by name"
+
+  (if-let ((class (find-class (find-symbol (concatenate 'string (string-upcase type) "-FIELD")
+                                           (find-package :sanity-clause.field)))))
+    class
+    (error "No field class named ~@(~A~)-FIELD" type)))
+
+
 (defun make-field (type &rest args)
   "Make a field instance of class ``type-FIELD`` and give it initargs :param:`args`."
 
-  (if-let ((class (find-class (find-symbol (concatenate 'string (string-upcase type) "-FIELD") (find-package :sanity-clause.field)))))
-    (apply #'make-instance class args)
-    (error (format nil "No field class named ~@(~A~)-FIELD" type))))
+  (apply #'make-instance
+         (etypecase type
+           ((or symbol string) (find-field type))
+           (class type))
+         args))
 
 
-(defclass string-field (field)
+(defmacro define-final-class (name direct-superclasses direct-slots &rest options)
+  "A macro for definining classes that are finalized after definition."
+
+  `(->
+    (defclass ,name ,direct-superclasses
+      ,direct-slots
+      ,@options)
+    c2mop:ensure-finalized))
+
+
+(define-final-class string-field (field)
   ()
   (:documentation "A field that contains a string."))
 
 
-(defclass member-field (field)
+(define-final-class member-field (field)
   ((members :initarg :members
             :reader members-of
             :initform (error "A member field requires a list of symbols that are acceptable members.")))
   (:documentation "A field that expects a member of a set of symbols."))
 
 
-(defclass list-field (field)
-  ((element-field :type field
-                  :initarg :element-field
-                  :reader element-field-of
-                  :documentation "The field that respresents the elements of the list."))
+(define-final-class nested-element ()
+  ((element-type :type (or field symbol)
+                 :initarg :element-type
+                 :initform (error "A nested field requires an element-type to deserialize members to.")
+                 :reader element-type-of
+                 :documentation "The field that respresents the elements of the list.")))
+
+(define-final-class list-field (field nested-element)
+  ()
   (:documentation "A field that contains a list of values satsified by another field."))
 
 
-(defclass nested-field (field)
-  ((nested-field :type field
-                 :initarg :schema
-		 :reader schema-of
-		 :initform (error "A nested field requires a nested field instance.")
-		 :documentation "A field that represents a complex object located at this field.")))
+
+;; (defmethod print-object ((o list-field) stream)
+;;   (print-unreadable-object (o stream :type t :identity t)
+;;     (format stream "element-type: ~a" (element-type-of o))))
 
 
-(defclass boolean-field (field)
+(define-final-class nested-field (field nested-element)
+  ()
+  (:documentation "A field that represents a complex object located at this slot."))
+
+
+;; (defmethod print-object ((o nested-field) stream)
+;;   (print-unreadable-object (o stream :type t :identity t)
+;;     (format stream "element-type: ~a" (element-type-of o))))
+
+
+(define-final-class boolean-field (field)
   ()
   (:documentation "A field type for bolean values."))
 
 
-(defclass email-field (string-field)
+(define-final-class email-field (string-field)
   ((validator :initform 'sanity-clause.validator:email))
   (:documentation "A field for values that should be emails."))
 
 
-(defclass uuid-field (string-field)
+(define-final-class uuid-field (string-field)
   ((validator :initform 'sanity-clause.validator:uuid))
   (:documentation "A field for values that should resemble UUIDs."))
 
 
-(defclass constant-field (field)
+(define-final-class constant-field (field)
   ((constant :initarg :constant
              :reader constant-value-of
              :documentation "The constant value to be serialized or deserialized.")
@@ -158,36 +192,37 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
   (:documentation "A field that expects to get the same value every time.  Will throw a :class:`conversion-error` if VALUE isn't equal to CONSTANT according to TEST."))
 
 
-(defclass integer-field (field)
+(define-final-class integer-field (field)
   ((validator :initform 'sanity-clause.validator:int))
   (:documentation "A field that holds an integer value."))
 
 
-(defclass real-field (field)
+(define-final-class real-field (field)
   ()
   (:documentation "A field that contains a real value (eg. possibly a float)."))
 
 
-(defclass timestamp-field (field)
+(define-final-class timestamp-field (field)
   ()
   (:documentation "A field that contains a timestamp"))
 
 
 (define-condition field-error (error)
-  ((message :type string
-            :initarg :message
-            :reader message-of)
-   (field :type field
+  ((field :type field
 	  :initarg :field
-	  :reader field-of)
-   (value :type t
-	  :initarg :value
-	  :reader value-of
-	  :documentation "The value that failed validation."))
+	  :reader field-of))
   (:documentation "Base class for all errors thrown by :package:`sanity-clause.field`."))
 
 
-(define-condition validation-error (field-error)
+(define-condition value-error (error)
+  ((value :type t
+          :initarg :value
+          :reader value-of
+          :documentation "The value that failed validation."))
+  (:documentation "Base class for errors involving values."))
+
+
+(define-condition validation-error (field-error value-error)
   ((error-messages :type list
 		   :initarg :error-messages
 		   :initform nil
@@ -197,13 +232,13 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
 
 
 (defmethod print-object ((condition validation-error) stream)
-  (format stream "~& Error validating value ~A in field ~A:~%~{* ~a~}~%"
+  (format stream "Error validating value ~A in field ~A:~%~{* ~a~}~%"
 	  (value-of condition)
 	  (field-of condition)
 	  (error-messages-of condition)))
 
 
-(define-condition conversion-error (field-error)
+(define-condition conversion-error (field-error value-error)
   ((raised-error :initarg :from-error
 		 :reader raised-error-of
 		 :documentation "The error that was caught while converting."))
@@ -211,7 +246,7 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
 
 
 (defmethod print-object ((condition conversion-error) stream)
-  (format stream "~& Error converting value for field ~A: ~%~A~%"
+  (format stream "Error converting value for field ~A: ~%~A~%"
 	  (field-of condition)
 	  (raised-error-of condition)))
 
@@ -220,8 +255,12 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
   ((missing-field-name :type (or symbol string)
 		       :initarg :field-name
 		       :reader missing-field-name-of
-		       :documentation "The name of the field that is missinga required value."))
+		       :documentation "The name of the field that is missing a required value."))
   (:documentation "An error that signals a required value is missing."))
+
+
+(defmethod print-object ((condition required-value-error) stream)
+  (format stream "A value for field ~A is required but none was provided." (missing-field-name-of condition)))
 
 
 (defun all-validators (field)
@@ -247,6 +286,8 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
   (:documentation "Converts the value retrieved from the raw data into the datatype the field expects to work with, or fails, raising a :class:`conversion-error`.")
 
   (:method ((field field) value)
+    (declare (ignore field))
+
     value)
 
   ;; This also should cover some child fields like email
@@ -273,9 +314,9 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
 	((or string symbol)
 	 (if-let ((member (find value (members-of field) :test #'string-equal)))
 	   member
-	   (error 'conversion-error :message (format nil "Value \"~a\" couldn't be found in set ~a"
-						     value
-						     (members-of field))))))))
+	   (error "Value \"~a\" couldn't be found in set ~a"
+                  value
+                  (members-of field)))))))
 
   (:method ((field boolean-field) value)
     (map-error conversion-error
@@ -283,12 +324,29 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
 	(string (cond
 		  ((member value '("y" "yes" "t" "true"  "on"  "enable" ) :test #'string-equal) t)
 		  ((member value '("n" "no"  "f" "false" "off" "disable") :test #'string-equal) nil)
-		  (t (error 'conversion-error "couldn't convert ~a to a boolean." value))))
+		  (t (error "couldn't convert ~a to a boolean." value))))
 	(boolean value))))
 
   (:method ((field timestamp-field) value)
     (map-error conversion-error
-      (local-time:parse-timestring value))))
+      (local-time:parse-timestring value)))
+
+
+  ;; For fields that inherit from nested-element, this behavior is a
+  ;; bit circular.  The value should be the initargs for an inner
+  ;; schema.
+  (:method ((field nested-field) value)
+    (map-error conversion-error
+      (with-slots (element-type) field
+        (apply #'make-instance element-type value))))
+
+
+  (:method ((field list-field) value)
+    (map-error conversion-error
+      (etypecase value
+        (trivial-types:proper-list
+         (with-slots (element-type) field
+           (mapcar (lambda (item) (apply #'make-instance element-type item)) value)))))))
 
 
 (defgeneric serialize (field value)
@@ -307,6 +365,7 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
 
 			      collecting (funcall validator value))
 			    (remove-if #'null))))
+
       (error 'validation-error :error-messages errors
 			       :field field
 			       :value value)))

@@ -3,7 +3,7 @@
 	#:alexandria)
   (:import-from #:sanity-clause.field
 		#:make-field)
-  (:shadowing-import-from #:sanity-clause.serde
+  (:shadowing-import-from #:sanity-clause.schema
 			  #:load)
   (:export #:load
 	   #:make-field)
