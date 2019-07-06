@@ -3,19 +3,6 @@
 
 (in-package :sanity-clause/test.metaclass)
 
-;; (defclass poato ()
-;;   ((name :type string
-;;          :reader name-of
-;;          :validator (:not-empty)
-;;          :initarg :name)
-;;    (variety :type (member :yam :idaho)
-;;             :initarg :variety
-;;             :reader variety-of
-;;             :field (:member
-;;                     :members (:yam :idaho))))
-;;   (:metaclass sanity-clause.metaclass:validated-metaclass))
-
-
 (defun dumb-list-eq (list1 list2)
   (every 'eq list1 list2))
 

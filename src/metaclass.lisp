@@ -1,6 +1,29 @@
 (defpackage :sanity-clause.metaclass
   (:use :cl :alexandria :cl-arrows)
-  (:export #:validated-metaclass))
+  (:export #:validated-metaclass)
+  (:documentation "The :class:`validated-metaclass` is a way of defining classes that have contracts enforced for them.
+
+::
+
+   (defclass person ()
+        ((favorite-dog :type symbol
+                       :field-type :member
+                       :members (:wedge :walter)
+                       :initarg :favorite-dog
+                       :required t)
+         (age :type (integer 0)
+              :initarg :age
+              :required t)
+         (potato :type string
+                 :initarg :potato
+                 :required t))
+        (:metaclass sanity-clause.metaclass:validated-metaclass))
+
+The above defines a class that can be instantiated with :function:`make-instance`, but will error if the initargs don't satisfy the contract required by the field.
+
+Some special types can be specifed with lisp type specs, like ``age`` above, which will generate an :class:`sanity-clause.field:integer-field`, with validations requiring the value be at least 0.
+
+**Nota Bene:** At the moment, there is no validation done on updating slots after instances are created."))
 
 (in-package :sanity-clause.metaclass)
 
@@ -41,6 +64,14 @@
 
 
 (defun slot-type-to-field-initargs (typespec)
+  "Sometimes, it's useful to try to infer the field type from a lisp type-spec.  For example::
+
+    (integer 0 10)
+
+  should produce a field that expects integers ``(<= 0 n 10)``.
+
+In the event the type isn't a simple type, assume it's a class with metaclass :class:`validated-metaclass` and try to use that instead."
+
   (let ((typespec (ensure-list typespec)))
     (case (car typespec)
       (integer
@@ -52,7 +83,8 @@
                (when-let ((length (second typespec)))
                  (list :validator (list (lambda (v) (sanity-clause.validator:str v :max-length length :min-length length)))))))
 
-      (real (values (find-class 'sanity-clause.field:real-field) nil))
+      (real
+       (values (find-class 'sanity-clause.field:real-field) nil))
 
       ;; Try to identify classes that are validated-metaclass classes, which can be used as fields
       ;; when composing classes with others.
