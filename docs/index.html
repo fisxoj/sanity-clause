@@ -11,13 +11,52 @@
 <table class="docinfo" frame="void" rules="none"><col class="docinfo-name" />
 <col class="docinfo-content" />
 <tbody valign="top">
-<tr><th class="docinfo-name">Author</th><td>Matt Novenstern</td></tr><tr><th class="docinfo-name">Version</th><td>0.3.0</td></tr><tr class="field"><th colspan="1" class="docinfo-name">license:</th><td class="field-body">LLGPLv3+</td>
+<tr><th class="docinfo-name">Author</th><td>Matt Novenstern</td></tr><tr><th class="docinfo-name">Version</th><td>0.4.0</td></tr><tr class="field"><th colspan="1" class="docinfo-name">license:</th><td class="field-body">LLGPLv3+</td>
+</tr>
+<tr class="field"><th colspan="1" class="docinfo-name">homepage:</th><td class="field-body"><a class="reference" href="https://fisxoj.github.io/sanity-clause/"><span>https://fisxoj.github.io/sanity-clause/</span></a></td>
 </tr>
 </tbody>
 </table>
-<p>Sanity clause is a data validation/contract library that can be used to collect and validate information.  You might use it for configuration data, or validating data from an api response, or documents from a datastore.</p>
-<p>To make use of it, you define schemas, which are currently property lists with <a class="reference ref-class" href="sanity-clause.field.html#class__field"><span class="ref-class">sanity-clause.field:field</span></a> subclasses that dictate the type of values you expect as well as the shape of the property list to be returned after deserializing and validating data.</p>
-<p>Eventually, there will be an interface that allows creating schemas attached to classes, so that you can deserialize data directly into a class instance.</p>
+<div class="image image-reference"><a class="reference" href="https://travis-ci.org/fisxoj/sanity-clause"><span><img name="id2" src="https://travis-ci.org/fisxoj/sanity-clause.svg?branch=master" alt="Travis CI status badge" id="id2" /></span></a></div>
+<div class="image image-reference"><a class="reference" href="https://coveralls.io/github/fisxoj/sanity-clause?branch=master"><span><img name="id3" src="https://coveralls.io/repos/github/fisxoj/sanity-clause/badge.svg?branch=master" alt="Coveralls status badge" id="id3" /></span></a></div>
+<table class="field-list" frame="void" rules="none"><col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th colspan="1" class="field-name">Source:</th><td class="field-body"><a class="reference" href="https://github.com/fisxoj/sanity-clause"><span>https://github.com/fisxoj/sanity-clause</span></a></td>
+</tr>
+<tr class="field"><th colspan="1" class="field-name">Docs:</th><td class="field-body"><p class="first"><a class="reference" href="https://fisxoj.github.io/sanity-clause/"><span>https://fisxoj.github.io/sanity-clause/</span></a></p>
+<p class="last">There's no such thing as Sanity Clause -- Groucho Marx</p>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Sanity clause is a data validation/contract library.  You might use it for configuration data, validating an api response, or documents from a datastore.  In a dynamically typed langauge, it helps you define clearly defined areas of doubt and uncertainty.  We should love our users, but we should never blindly trust their inputs.</p>
+<p>To make use of it, you define schemas, which can be property lists with symbols for keys and instances of <a class="reference ref-class" href="sanity-clause.field.html#class__field"><span class="ref-class">sanity-clause.field:field</span></a> subclasses that dictate the type of values you expect as well as the shape of the property list to be returned after deserializing and validating data.  For example:</p>
+<pre class="literal-block">
+(list :name (make-field :string) :age (make-field :integer))
+</pre><p>You can load these sorts of schemas from a file by writing them as sexps with keywords, like this:</p>
+<pre class="literal-block">
+schema.sexp
+
+(:key (:string :validator (:not-empty) :default "potato")
+ :key2 (:integer :validator ((:int :min 0)) :default 2))
+</pre><p>and then loading them using <a class="reference ref-function" href="sanity-clause.loadable-schema.html#function__load"><span class="ref-function">sanity-clause.loadable-schema:load</span></a> to load them.</p>
+<p>Finally, you can also define class-based schemas using <a class="reference ref-class" href="sanity-clause.metaclass.html#class__validated-metaclass"><span class="ref-class">sanity-clause.metaclass:validated-metaclass</span></a> like:</p>
+<pre class="literal-block">
+(defclass person ()
+     ((favorite-dog :type symbol
+                    :field-type :member
+                    :members (:wedge :walter)
+                    :initarg :favorite-dog
+                    :required t)
+      (age :type (integer 0)
+           :initarg :age
+           :required t)
+      (potato :type string
+              :initarg :potato
+              :required t))
+     (:metaclass sanity-clause.metaclass:validated-metaclass))
+</pre><p>which will validate thier initargs when you instantiate them (<strong><span>BUT NOT WHEN YOU SET SLOTS</span></strong>).  Hopefully, that will be added eventually, perhaps as an optional feature.</p>
 <div id="packages" class="section"><h2><a name="packages">Packages</a></h2>
 <ul>
 <li><p class="first last"><a class="reference" href="sanity-clause.util.html"><span>sanity-clause.util</span></a></p>
@@ -26,15 +65,19 @@
 </li>
 <li><p class="first last"><a class="reference" href="sanity-clause.field.html"><span>sanity-clause.field</span></a></p>
 </li>
+<li><p class="first last"><a class="reference" href="sanity-clause.loadable-schema.html"><span>sanity-clause.loadable-schema</span></a></p>
+</li>
 <li><p class="first last"><a class="reference" href="sanity-clause.schema.html"><span>sanity-clause.schema</span></a></p>
 </li>
-<li><p class="first last"><a class="reference" href="sanity-clause.serde.html"><span>sanity-clause.serde</span></a></p>
+<li><p class="first last"><a class="reference" href="sanity-clause.metaclass.html"><span>sanity-clause.metaclass</span></a></p>
 </li>
 <li><p class="first last"><a class="reference" href="sanity-clause.html"><span>sanity-clause</span></a></p>
 </li>
 </ul>
 </div>
-<hr class ="docutils footer" /><div class="footer">Generated on : Sun, 18 Nov 2018 17:35:20 .
+<div class="system-message"><p class="system-message-title">System Message: WARNING (<tt class="docutils">Media uri "https://travis-ci.org/fisxoj/sanity-clause.svg?branch=master" is either relative or the media file was not found.</tt>, source line 12)</p>
+</div><div class="system-message"><p class="system-message-title">System Message: WARNING (<tt class="docutils">Media uri "https://coveralls.io/repos/github/fisxoj/sanity-clause/badge.svg?branch=master" is either relative or the media file was not found.</tt>, source line 15)</p>
+</div><hr class ="docutils footer" /><div class="footer">Generated on : Fri, 05 Jul 2019 23:16:57 .
 Generated by cl-docutils 0.1.1 from <a class="reference" href="http://docutils.sourceforge.net/rst.html"><span>restructured text</span></a> source.
 </div>
 </div>
