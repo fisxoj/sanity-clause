@@ -126,36 +126,27 @@
 
 (deftest test-nested-class
 
-  (c2mop:ensure-finalized
-   (defclass pie ()
-     ((pie :type string
-           :field-type :member
-           :members ("peach" "key-lime")
-           :initarg :pie))
-     (:metaclass sanity-clause.metaclass:validated-metaclass)))
+  (defclass pie ()
+    ((pie :type string
+          :field-type :member
+          :members ("peach" "key-lime")
+          :initarg :pie))
+    (:metaclass sanity-clause.metaclass:validated-metaclass))
 
-  (c2mop:ensure-finalized
-   (defclass pie-inventory ()
-     ((pie :field-type :nested
+  (defclass pie-inventory ()
+    ((pie :field-type :nested
+          :element-type pie
+          :initarg :pie)
+     (quantity :type integer
+               :initarg :qty))
+    (:metaclass sanity-clause.metaclass:validated-metaclass))
+
+  (defclass pie-list ()
+    ((pies :type list
+           :field-type :list
            :element-type pie
-           :initarg :pie)
-      (quantity :type integer
-                :initarg :qty))
-     (:metaclass sanity-clause.metaclass:validated-metaclass)))
-
-  (c2mop:ensure-finalized
-   (defclass pie-list ()
-     ((pies :type list
-            :field-type :list
-            :element-type pie
-            :initarg :pies))
-     (:metaclass sanity-clause.metaclass:validated-metaclass)))
-
-  ;; (c2mop:ensure-finalized 'pie)
-  ;; (c2mop:ensure-finalized 'pie-inventory)
-  ;; (c2mop:ensure-finalized 'pie-list)
-
-  ;; (map 'nil (compose #'c2mop:ensure-finalized #'find-class) '(pie pie-inventory pie-list))
+           :initarg :pies))
+    (:metaclass sanity-clause.metaclass:validated-metaclass))
 
 
   (testing "pie inventory"
