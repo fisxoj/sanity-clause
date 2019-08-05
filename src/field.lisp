@@ -19,6 +19,7 @@
 	   #:real-field
 	   #:constant-field
 	   #:timestamp-field
+           #:uri-field
            #:boolean-field
 	   #:uuid-field
 
@@ -138,34 +139,6 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
   (:documentation "A field that expects a member of a set of symbols."))
 
 
-(define-final-class nested-element ()
-  ((element-type :type (or field symbol)
-                 :initarg :element-type
-                 :initform (error "A nested field requires an element-type to deserialize members to.")
-                 :reader element-type-of
-                 :documentation "The field that respresents the elements of the list.")))
-
-(define-final-class list-field (field nested-element)
-  ()
-  (:documentation "A field that contains a list of values satsified by another field."))
-
-
-
-;; (defmethod print-object ((o list-field) stream)
-;;   (print-unreadable-object (o stream :type t :identity t)
-;;     (format stream "element-type: ~a" (element-type-of o))))
-
-
-(define-final-class nested-field (field nested-element)
-  ()
-  (:documentation "A field that represents a complex object located at this slot."))
-
-
-;; (defmethod print-object ((o nested-field) stream)
-;;   (print-unreadable-object (o stream :type t :identity t)
-;;     (format stream "element-type: ~a" (element-type-of o))))
-
-
 (define-final-class boolean-field (field)
   ()
   (:documentation "A field type for bolean values."))
@@ -173,6 +146,11 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
 
 (define-final-class email-field (string-field)
   ((validator :initform 'sanity-clause.validator:email))
+  (:documentation "A field for values that should be emails."))
+
+
+(define-final-class uri-field (string-field)
+  ()
   (:documentation "A field for values that should be emails."))
 
 
@@ -285,6 +263,10 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
 (defgeneric deserialize (field value)
   (:documentation "Converts the value retrieved from the raw data into the datatype the field expects to work with, or fails, raising a :class:`conversion-error`.")
 
+  (:method :around ((field field) value)
+    (map-error conversion-error
+      (call-next-method)))
+
   (:method ((field field) value)
     (declare (ignore field))
 
@@ -292,61 +274,43 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
 
   ;; This also should cover some child fields like email
   (:method ((field string-field) value)
-    (map-error conversion-error
-      (etypecase value
-	(string value))))
+    (etypecase value
+      (string value)))
 
   (:method ((field integer-field) value)
-    (map-error conversion-error
-      (etypecase value
-	(integer value)
-	(string (parse-integer value)))))
+    (etypecase value
+      (integer value)
+      (string (parse-integer value))))
 
   (:method ((field real-field) value)
-    (map-error conversion-error
-      (etypecase value
-	(real value)
-	(string (parse-float:parse-float value)))))
+    (etypecase value
+      (real value)
+      (string (parse-float:parse-float value))))
 
   (:method ((field member-field) value)
-    (map-error conversion-error
-      (etypecase value
-	((or string symbol)
-	 (if-let ((member (find value (members-of field) :test #'string-equal)))
-	   member
-	   (error "Value \"~a\" couldn't be found in set ~a"
-                  value
-                  (members-of field)))))))
+    (etypecase value
+      ((or string symbol)
+       (if-let ((member (find value (members-of field) :test #'string-equal)))
+         member
+         (error "Value \"~a\" couldn't be found in set ~a"
+                value
+                (members-of field))))))
+
+  (:method ((field uri-field) value)
+    (etypecase value
+      (string (quri:uri value))
+      (quri.uri:uri value)))
 
   (:method ((field boolean-field) value)
-    (map-error conversion-error
-      (etypecase value
-	(string (cond
-		  ((member value '("y" "yes" "t" "true"  "on"  "enable" ) :test #'string-equal) t)
-		  ((member value '("n" "no"  "f" "false" "off" "disable") :test #'string-equal) nil)
-		  (t (error "couldn't convert ~a to a boolean." value))))
-	(boolean value))))
+    (etypecase value
+      (string (cond
+                ((member value '("y" "yes" "t" "true"  "on"  "enable" ) :test #'string-equal) t)
+                ((member value '("n" "no"  "f" "false" "off" "disable") :test #'string-equal) nil)
+                (t (error "couldn't convert ~a to a boolean." value))))
+      (boolean value)))
 
   (:method ((field timestamp-field) value)
-    (map-error conversion-error
-      (local-time:parse-timestring value)))
-
-
-  ;; For fields that inherit from nested-element, this behavior is a
-  ;; bit circular.  The value should be the initargs for an inner
-  ;; schema.
-  (:method ((field nested-field) value)
-    (map-error conversion-error
-      (with-slots (element-type) field
-        (apply #'make-instance element-type value))))
-
-
-  (:method ((field list-field) value)
-    (map-error conversion-error
-      (etypecase value
-        (trivial-types:proper-list
-         (with-slots (element-type) field
-           (mapcar (lambda (item) (apply #'make-instance element-type item)) value)))))))
+    (local-time:parse-timestring value)))
 
 
 (defgeneric serialize (field value)

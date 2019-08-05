@@ -110,19 +110,18 @@ In the event the type isn't a simple type, assume it's a class with metaclass :c
       ;; Try to set data-key based on an initarg
       ;; FIXME: probably better to be smart about which initarg we use
       ;; or possibly refactor to allow many possible data sources.
-      (let ((data-key (car (getf initargs :initargs))))
-
-        (let ((field (apply #'sanity-clause.field:make-field
+      (let* ((data-key (first (getf initargs :initargs)))
+             (field (apply #'sanity-clause.field:make-field
                             field-class
-                            (list* :data-key data-key
+                            (list* :data-key (getf initargs :data-key data-key)
                                    (merge-plist '(:validator) field-initargs-from-type field-initargs)))))
 
-          ;; Remove this one special property, too, which isn't an initarg for either the
-          ;; field or the class.
-          (remove-from-plist others :field-type)
+        ;; Remove this one special property, too, which isn't an initarg for either the
+        ;; field or the class.
+        (remove-from-plist others :field-type)
 
-          (list* :field-instance field
-                 others))))))
+        (list* :field-instance field
+               others)))))
 
 
 (defclass validated-metaclass (standard-class)
@@ -144,20 +143,21 @@ In the event the type isn't a simple type, assume it's a class with metaclass :c
 
     (dolist (slot (c2mop:class-slots class))
 
-      (let ((field (field-of slot)))
+      (let* ((field (field-of slot))
+             (initarg (first (c2mop:slot-definition-initargs slot))))
 
         (when (and (sanity-clause.field:load-field-p field)
                    ;; Don't bother trying to load something we don't have a data-key for
                    (sanity-clause.field:data-key-of field))
 
           (let ((value (->>
-                        (sanity-clause.field:get-value field data-source)
+                        (sanity-clause.util:get-value data-source initarg (sanity-clause.field::default-of (field-of slot)))
                         (sanity-clause.field:deserialize field))))
 
             (sanity-clause.field:validate field value)
 
             (appendf validated-initargs
-                     (list (sanity-clause.field:data-key-of field) value))))))
+                     (list initarg value))))))
 
     (apply #'call-next-method class validated-initargs)))
 
@@ -210,3 +210,79 @@ In the event the type isn't a simple type, assume it's a class with metaclass :c
     (setf (field-of effective-slot) (some #'field-of direct-slot-definitions))
 
     effective-slot))
+
+
+;;; Code to add classes to the protocol for list-based schemas sanity-clause.schema:load
+;;; This is useful for making classes from alists (ie. not using the ``make-instance`` interface.
+
+
+(defmethod sanity-clause.field:get-value ((slot validated-slot-definition) object &optional field-name)
+  (declare (ignore field-name))
+
+  (sanity-clause.field:get-value (field-of slot) object))
+
+
+(defun collect-initargs-from-list (class data)
+  "Converts an input list from form ``([data-key] [value] ...)`` or ``(([data-key] . [value]) ...)`` to ``([initarg] [value] ...)`` so it is suitable for passing to :function:`make-instance`."
+
+  (declare (type validated-metaclass class)
+           (type (or trivial-types:property-list trivial-types:association-list) data))
+
+  (c2mop:ensure-finalized class)
+
+  (loop for slot in (c2mop:class-slots class)
+        when (sanity-clause.field:load-field-p (field-of slot))
+          collecting (first (c2mop:slot-definition-initargs slot))
+        collecting (sanity-clause.field:get-value slot data)))
+
+
+(defmethod sanity-clause.schema:load ((symbol symbol) data &optional format)
+  (declare (ignore format))
+
+  (sanity-clause.schema:load (find-class symbol) data))
+
+
+(defmethod sanity-clause.schema:load ((class validated-metaclass) data &optional format)
+  (declare (ignore format))
+
+  (apply #'make-instance class (collect-initargs-from-list class data)))
+
+
+;; For fields that inherit from nested-element, this behavior is a
+;; bit circular.  The value should be the initargs for an inner
+;; schema.
+
+
+(defclass nested-element ()
+  ((element-type :type (or field symbol)
+                 :initarg :element-type
+                 :initform (error "A nested field requires an element-type to deserialize members to.")
+                 :reader element-type-of
+                 :documentation "The field that respresents the elements of the list.")))
+
+
+(sanity-clause.field::define-final-class list-field (sanity-clause.field::field nested-element)
+  ()
+  (:documentation "A field that contains a list of values satsified by another field."))
+
+
+(sanity-clause.field::define-final-class nested-field (sanity-clause.field::field nested-element)
+  ()
+  (:documentation "A field that represents a complex object located at this slot."))
+
+
+(import '(list-field nested-field) (find-package 'sanity-clause.field))
+
+
+(export '(list-field nested-field) (find-package 'sanity-clause.field))
+
+
+(defmethod sanity-clause.field:deserialize ((field nested-field) value)
+  (sanity-clause.schema:load (element-type-of field) value))
+
+
+(defmethod sanity-clause.field:deserialize ((field list-field) value)
+  (etypecase value
+    (trivial-types:proper-list
+     (with-slots (element-type) field
+       (mapcar (lambda (item) (sanity-clause.schema:load element-type item)) value)))))

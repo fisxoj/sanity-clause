@@ -9,7 +9,8 @@
 
 (eval-when (:load-toplevel :compile-toplevel)
   (defvar +manual-only-fields+ '(member-field
-				 nested-field)
+				 nested-field
+                                 list-field)
     "Symbols of field types that require extra data to exist, like :class:`member-field`, which requires a set of symbols as an initarg."))
 
 
@@ -119,12 +120,22 @@ E.g. (let ((string-field (make-field 'string))
 	(ok (signals (deserialize member-field 3) 'conversion-error)
 	    "signals an error for a non-string-like type.")))
 
+    (testing "URI field"
+      (ok (deserialize uri-field "https://something.com/potato?woo=bar#id")
+          "accpets a valid uri")
+
+      (skip "Not sure how to validate uris, yet"
+       ;; (ok (signals (deserialize uri-field "woo//bugs") 'conversion-error)
+       ;;     "signals an error on a non-uri value.")
+       ))
+
+
     (testing "Boolean field"
       (ok (eq (deserialize boolean-field "on") t)
-	  "converts a truthy string to t.")
+          "converts a truthy string to t.")
 
       (ok (signals (deserialize boolean-field "wumbo") 'conversion-error)
-	  "signals an error for an uncertain value."))
+          "signals an error for an uncertain value."))
 
     (testing "Timestamp field"
       (ok (typep (deserialize timestamp-field "2006-06-06TZ") 'local-time:timestamp)
