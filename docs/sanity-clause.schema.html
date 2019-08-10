@@ -11,31 +11,40 @@
 <div id="sanity-clause-schema-package" class="document"><h1 class="title"><tt class="docutils literal">
 <span class="pre">sanity-clause.schema</span></tt> package</h1>
 <p><a class="reference" href="index.html"><span>&lt;&lt; back to sanity-clause index</span></a></p>
-<p>This package defines the protocol for (de)serializing data to/from other datastructures.</p>
+<p>The <a class="reference ref-class" href="sanity-clause.schema.html#class__validated-metaclass"><span class="ref-class">validated-metaclass</span></a> is a way of defining classes that have contracts enforced for them.</p>
+<pre class="literal-block">
+(defclass person ()
+     ((favorite-dog :type symbol
+                    :field-type :member
+                    :members (:wedge :walter)
+                    :initarg :favorite-dog
+                    :required t)
+      (age :type (integer 0)
+           :initarg :age
+           :required t)
+      (potato :type string
+              :initarg :potato
+              :required t))
+     (:metaclass validated-metaclass))
+</pre><p>The above defines a class that can be instantiated with <a class="reference ref-function" href="http://www.lispworks.com/reference/HyperSpec/Body/f_mk_ins.htm"><span class="ref-function">common-lisp:make-instance</span></a>, but will error if the initargs don't satisfy the contract required by the field.</p>
+<p>Some special types can be specifed with lisp type specs, like <tt class="docutils literal">
+<span class="pre">age</span></tt> above, which will generate an <a class="reference ref-class" href="sanity-clause.field.html#class__integer-field"><span class="ref-class">sanity-clause.field:integer-field</span></a>, with validations requiring the value be at least 0.</p>
+<p><strong><span>Nota Bene:</span></strong> At the moment, there is no validation done on updating slots after instances are created.</p>
 <p>Exported symbols:</p>
-<div id="generic-functions" class="section"><h2><a name="generic-functions">Generic Functions</a></h2>
-<a id="generic-function-dump" class="target" name="generic-function-dump"></a><div id="dump" class="section"><h3><a name="dump"><tt class="docutils literal">
-<span class="pre">dump</span></tt></a></h3>
-<p><tt class="docutils literal">
-<span class="pre">(SCHEMA</span> <span class="pre">DATA</span> <span class="pre">&amp;OPTIONAL</span> <span class="pre">FORMAT)</span></tt></p>
-<p>WARNING: This isn't fully tested/supported, but it might work!  I reserve the right to change the API in breaking ways, though.</p>
-<p>dump takes some data an serializes it to a plist or alist based on <tt class="docutils literal param">
-<span class="pre">format</span></tt>, which can be set to, well, <tt class="docutils literal">
-<span class="pre">:plist</span></tt> or <tt class="docutils literal">
-<span class="pre">:alist</span></tt>.</p>
-<a id="generic-function-load" class="target" name="generic-function-load"></a></div>
-<div id="load" class="section"><h3><a name="load"><tt class="docutils literal">
-<span class="pre">load</span></tt></a></h3>
-<p><tt class="docutils literal">
-<span class="pre">(SCHEMA</span> <span class="pre">DATA</span> <span class="pre">&amp;OPTIONAL</span> <span class="pre">FORMAT)</span></tt></p>
-<p>Deserializes <tt class="docutils literal param">
-<span class="pre">data</span></tt> into an instance of <tt class="docutils literal param">
-<span class="pre">schema</span></tt>.  Fills in default values and validates fields.  If <tt class="docutils literal param">
-<span class="pre">schema</span></tt> is <tt class="docutils literal">
-<span class="pre">:env</span></tt>, it will try to load from environment variables.</p>
+<div id="classes" class="section"><h2><a name="classes">Classes</a></h2>
+<a id="class-validated-metaclass" class="target" name="class-validated-metaclass"></a><div id="validated-metaclass" class="section"><h3><a name="validated-metaclass"><tt class="docutils literal">
+<span class="pre">validated-metaclass</span></tt></a></h3>
+<table class="field-list" frame="void" rules="none"><col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th colspan="1" class="field-name">Superclasses:</th><td class="field-body"><tt class="docutils literal">
+<span class="pre">(STANDARD-CLASS)</span></tt></td>
+</tr>
+</tbody>
+</table>
 </div>
 </div>
-<hr class ="docutils footer" /><div class="footer">Generated on : Mon, 05 Aug 2019 14:39:58 .
+<hr class ="docutils footer" /><div class="footer">Generated on : Sat, 10 Aug 2019 19:19:54 .
 </div>
 </div>
 </body>

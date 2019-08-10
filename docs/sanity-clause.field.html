@@ -12,7 +12,7 @@
 <span class="pre">sanity-clause.field</span></tt> package</h1>
 <p><a class="reference" href="index.html"><span>&lt;&lt; back to sanity-clause index</span></a></p>
 <p>Field classes that can be used to validate data.</p>
-<p>Also contains <a class="reference ref-function" href="sanity-clause.field.html#function__get-value"><span class="ref-function">get-value</span></a>, <a class="reference ref-function" href="sanity-clause.field.html#function__deserialize"><span class="ref-function">deserialize</span></a>, and <a class="reference ref-function" href="sanity-clause.field.html#function__validate"><span class="ref-function">validate</span></a>, which represent the lifecycle of loading data from some other object.</p>
+<p>Also contains <a class="reference ref-function" href="sanity-clause.protocol.html#function__get-value"><span class="ref-function">sanity-clause.protocol:get-value</span></a>, <a class="reference ref-function" href="sanity-clause.protocol.html#function__deserialize"><span class="ref-function">sanity-clause.protocol:deserialize</span></a>, and <a class="reference ref-function" href="sanity-clause.protocol.html#function__validate"><span class="ref-function">sanity-clause.protocol:validate</span></a>, which represent the lifecycle of loading data from some other object.</p>
 <p>Exported symbols:</p>
 <div id="functions" class="section"><h2><a name="functions">Functions</a></h2>
 <a id="function-make-field" class="target" name="function-make-field"></a><div id="make-field" class="section"><h3><a name="make-field"><tt class="docutils literal">
@@ -43,29 +43,48 @@
 <p>Is this field required for deserialization (fields that have flow of :load or :both)?</p>
 </div>
 </div>
-<div id="generic-functions" class="section"><h2><a name="generic-functions">Generic Functions</a></h2>
-<a id="generic-function-get-value" class="target" name="generic-function-get-value"></a><div id="get-value" class="section"><h3><a name="get-value"><tt class="docutils literal">
-<span class="pre">get-value</span></tt></a></h3>
-<p><tt class="docutils literal">
-<span class="pre">(FIELD</span> <span class="pre">OBJECT</span> <span class="pre">&amp;OPTIONAL</span> <span class="pre">FIELD-NAME)</span></tt></p>
-<p>Tries to fetch the value corresponding to the field from some datastructure.  <tt class="docutils literal param">
-<span class="pre">field-name</span></tt> is used if no attribute is explicitly set on the field.</p>
-<a id="generic-function-validate" class="target" name="generic-function-validate"></a></div>
-<div id="validate" class="section"><h3><a name="validate"><tt class="docutils literal">
-<span class="pre">validate</span></tt></a></h3>
-<p><tt class="docutils literal">
-<span class="pre">(FIELD</span> <span class="pre">VALUE)</span></tt></p>
-<p>Run the validation checks for a given field and raise a <a class="reference ref-class" href="sanity-clause.field.html#class__validation-error"><span class="ref-class">validation-error</span></a> if it is invalid.</p>
-<a id="generic-function-deserialize" class="target" name="generic-function-deserialize"></a></div>
-<div id="deserialize" class="section"><h3><a name="deserialize"><tt class="docutils literal">
-<span class="pre">deserialize</span></tt></a></h3>
-<p><tt class="docutils literal">
-<span class="pre">(FIELD</span> <span class="pre">VALUE)</span></tt></p>
-<p>Converts the value retrieved from the raw data into the datatype the field expects to work with, or fails, raising a <a class="reference ref-class" href="sanity-clause.field.html#class__conversion-error"><span class="ref-class">conversion-error</span></a>.</p>
-</div>
-</div>
 <div id="classes" class="section"><h2><a name="classes">Classes</a></h2>
-<a id="condition-required-value-error" class="target" name="condition-required-value-error"></a><div id="required-value-error" class="section"><h3><a name="required-value-error"><tt class="docutils literal">
+<a id="class-one-schema-of-field" class="target" name="class-one-schema-of-field"></a><div id="one-schema-of-field" class="section"><h3><a name="one-schema-of-field"><tt class="docutils literal">
+<span class="pre">one-schema-of-field</span></tt></a></h3>
+<table class="field-list" frame="void" rules="none"><col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th colspan="1" class="field-name">Superclasses:</th><td class="field-body"><tt class="docutils literal">
+<span class="pre">(FIELD)</span></tt></td>
+</tr>
+</tbody>
+</table>
+<p>A field type that allows any of the schemas specified.</p>
+<a id="class-one-field-of-field" class="target" name="class-one-field-of-field"></a></div>
+<div id="one-field-of-field" class="section"><h3><a name="one-field-of-field"><tt class="docutils literal">
+<span class="pre">one-field-of-field</span></tt></a></h3>
+<table class="field-list" frame="void" rules="none"><col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th colspan="1" class="field-name">Superclasses:</th><td class="field-body"><tt class="docutils literal">
+<span class="pre">(FIELD)</span></tt></td>
+</tr>
+</tbody>
+</table>
+<p>A field type that allows any of the fields specified.</p>
+<a id="class-map-field" class="target" name="class-map-field"></a></div>
+<div id="map-field" class="section"><h3><a name="map-field"><tt class="docutils literal">
+<span class="pre">map-field</span></tt></a></h3>
+<table class="field-list" frame="void" rules="none"><col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field"><th colspan="1" class="field-name">Superclasses:</th><td class="field-body"><tt class="docutils literal">
+<span class="pre">(FIELD)</span></tt></td>
+</tr>
+</tbody>
+</table>
+<p>A field that maps values of one kind to values to another kind, like strings to strings, or numbers to objects. examples:</p>
+<pre class="literal-block">
+(make-field :map :key-field :string :value-field :integer)
+(deserialize * '(("potato" . 4) ("chimp" . 11)))
+
+</pre><a id="condition-required-value-error" class="target" name="condition-required-value-error"></a></div>
+<div id="required-value-error" class="section"><h3><a name="required-value-error"><tt class="docutils literal">
 <span class="pre">required-value-error</span></tt></a></h3>
 <table class="field-list" frame="void" rules="none"><col class="field-name" />
 <col class="field-body" />
@@ -227,7 +246,7 @@
 <p>A base class for all fields that controls how they are (de?)serialized.</p>
 </div>
 </div>
-<hr class ="docutils footer" /><div class="footer">Generated on : Mon, 05 Aug 2019 14:39:58 .
+<hr class ="docutils footer" /><div class="footer">Generated on : Sat, 10 Aug 2019 19:19:54 .
 </div>
 </div>
 </body>

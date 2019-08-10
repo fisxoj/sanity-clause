@@ -23,6 +23,10 @@
            #:boolean-field
 	   #:uuid-field
 
+           #:map-field
+           #:one-schema-of-field
+           #:one-field-of-field
+
            ;; Fields defined in nested-fields.lisp
            ;; #:map-field
            ;; #:list-field

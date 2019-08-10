@@ -7,7 +7,19 @@
 	   #:validate
 	   #:get-value
            #:load
-           #:dump))
+           #:dump)
+  (:documentation "The methods that govern behavior in sanity-clause.
+
+The methods relating to fields are:
+* :function:`resolve`
+* :function:`deserialize`
+* :function:`serialize`
+* :function:`validate`
+* :function:`get-value`
+
+The methods relating to schemas are:
+* :function:`load`
+* :function:`dump`"))
 
 (in-package :sanity-clause.protocol)
 
@@ -16,7 +28,7 @@
 
 
 (defgeneric deserialize (field value)
-  (:documentation "Converts the value retrieved from the raw data into the datatype the field expects to work with, or fails, raising a :class:`conversion-error`."))
+  (:documentation "Converts the value retrieved from the raw data into the datatype the field expects to work with, or fails, raising a :class:`sanity-clause.field:conversion-error`."))
 
 
 (defgeneric serialize (field value)

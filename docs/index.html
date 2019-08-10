@@ -41,8 +41,8 @@ schema.sexp
 
 (:key (:string :validator (:not-empty) :default "potato")
  :key2 (:integer :validator ((:int :min 0)) :default 2))
-</pre><p>and then loading them using <a class="reference ref-function" href="sanity-clause.loadable-schema.html#function__load"><span class="ref-function">sanity-clause.loadable-schema:load</span></a> to load them.</p>
-<p>Finally, you can also define class-based schemas using <a class="reference ref-class" href="sanity-clause.metaclass.html#class__validated-metaclass"><span class="ref-class">sanity-clause.metaclass:validated-metaclass</span></a> like:</p>
+</pre><p>and then loading them using <a class="reference ref-function" href="http://www.lispworks.com/reference/HyperSpec/Body/f_load.htm"><span class="ref-function">common-lisp:load</span></a> to load them.</p>
+<p>Finally, you can also define class-based schemas using <a class="reference ref-class" href="sanity-clause.schema.html#class__validated-metaclass"><span class="ref-class">sanity-clause.schema:validated-metaclass</span></a> like:</p>
 <pre class="literal-block">
 (defclass person ()
      ((favorite-dog :type symbol
@@ -56,7 +56,7 @@ schema.sexp
       (potato :type string
               :initarg :potato
               :required t))
-     (:metaclass sanity-clause.metaclass:validated-metaclass))
+     (:metaclass sanity-clause:validated-metaclass))
 </pre><p>which will validate thier initargs when you instantiate them (<strong><span>BUT NOT WHEN YOU SET SLOTS</span></strong>).  Hopefully, that will be added eventually, perhaps as an optional feature.</p>
 <div id="example" class="section"><h2><a name="example">Example</a></h2>
 <p><tt class="docutils literal">
@@ -96,7 +96,7 @@ schema.sexp
           :field-type :email
           :initarg :email
           :documentation "The email address of the contact person/organization. MUST be in the format of an email address."))
-  (:metaclass sanity-clause.metaclass:validated-metaclass))
+  (:metaclass sanity-clause:validated-metaclass))
 
 
 (defclass license-object ()
@@ -107,7 +107,7 @@ schema.sexp
         :field-type :uri
         :initarg :url
         :documentation "A URL to the license used for the API. MUST be in the format of a URL."))
-  (:metaclass sanity-clause.metaclass:validated-metaclass))
+  (:metaclass sanity-clause:validated-metaclass))
 
 
 (defclass info-object ()
@@ -137,7 +137,7 @@ schema.sexp
             :initarg :version
             :documentation "Provides the version of the application API (not to be confused with the specification version)."
             :required t))
-  (:metaclass sanity-clause.metaclass:validated-metaclass))
+  (:metaclass sanity-clause:validated-metaclass))
 
       ;;; Deserialize the json from the file into instances of these classes
 
@@ -161,20 +161,20 @@ schema.sexp
 </li>
 <li><p class="first last"><a class="reference" href="sanity-clause.validator.html"><span>sanity-clause.validator</span></a></p>
 </li>
+<li><p class="first last"><a class="reference" href="sanity-clause.protocol.html"><span>sanity-clause.protocol</span></a></p>
+</li>
 <li><p class="first last"><a class="reference" href="sanity-clause.field.html"><span>sanity-clause.field</span></a></p>
 </li>
 <li><p class="first last"><a class="reference" href="sanity-clause.loadable-schema.html"><span>sanity-clause.loadable-schema</span></a></p>
 </li>
 <li><p class="first last"><a class="reference" href="sanity-clause.schema.html"><span>sanity-clause.schema</span></a></p>
 </li>
-<li><p class="first last"><a class="reference" href="sanity-clause.metaclass.html"><span>sanity-clause.metaclass</span></a></p>
-</li>
 <li><p class="first last"><a class="reference" href="sanity-clause.html"><span>sanity-clause</span></a></p>
 </li>
 </ul>
 </div>
 </div>
-<hr class ="docutils footer" /><div class="footer">Generated on : Mon, 05 Aug 2019 14:39:58 .
+<hr class ="docutils footer" /><div class="footer">Generated on : Sat, 10 Aug 2019 19:19:54 .
 </div>
 </div>
 </body>
