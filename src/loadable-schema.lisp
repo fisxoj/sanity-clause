@@ -28,6 +28,6 @@ your ``my-schema.sexp`` might look like::
 and returns a schema plist with fields."
 
   (typecase schema
-    (pathname (load (uiop:with-safe-io-syntax () (uiop:read-file-form schema))))
+    (pathname (load-schema (uiop:with-safe-io-syntax () (uiop:read-file-form schema))))
     (cons (loop for (key (type . spec)) on schema by #'cddr
                 appending (list key (apply #'sanity-clause.field:make-field type (append (list :data-key key) (sanity-clause.validator:hydrate-validators spec))))))))
