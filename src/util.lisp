@@ -2,7 +2,8 @@
   (:use #:cl
 	#:cl-arrows
 	#:alexandria)
-  (:export #:get-value))
+  (:export #:get-value
+           #:do-key-values))
 
 (in-package #:sanity-clause.util)
 
@@ -41,3 +42,16 @@
 	 (let* ((assoc-cons (assoc key object :test #'string-equal))
 		(value (or (cdr assoc-cons) default)))
 	   (values value (not (null assoc-cons))))))))
+
+
+(defmacro do-key-values ((key value) data &body body)
+  (with-gensyms (alist)
+    `(let ((,alist (etypecase ,data
+                     (hash-table
+                      (hash-table-alist ,data))
+                     (trivial-types:property-list
+                      (plist-alist ,data))
+                     (trivial-types:association-list
+                      ,data))))
+       (loop for (,key . ,value) in ,alist
+             do (progn ,@body)))))
