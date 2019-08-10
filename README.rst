@@ -32,7 +32,7 @@ You can load these sorts of schemas from a file by writing them as sexps with ke
 and then loading them using :function:`sanity-clause.loadable-schema:load` to load them.
 
 
-Finally, you can also define class-based schemas using :class:`sanity-clause.metaclass:validated-metaclass` like::
+Finally, you can also define class-based schemas using :class:`sanity-clause:validated-metaclass` like::
 
    (defclass person ()
         ((favorite-dog :type symbol
@@ -46,7 +46,7 @@ Finally, you can also define class-based schemas using :class:`sanity-clause.met
          (potato :type string
                  :initarg :potato
                  :required t))
-        (:metaclass sanity-clause.metaclass:validated-metaclass))
+        (:metaclass sanity-clause:validated-metaclass))
 
 which will validate thier initargs when you instantiate them (**BUT NOT WHEN YOU SET SLOTS**).  Hopefully, that will be added eventually, perhaps as an optional feature.
 
@@ -91,7 +91,7 @@ Example
             :field-type :email
             :initarg :email
             :documentation "The email address of the contact person/organization. MUST be in the format of an email address."))
-    (:metaclass sanity-clause.metaclass:validated-metaclass))
+    (:metaclass sanity-clause:validated-metaclass))
 
 
   (defclass license-object ()
@@ -102,7 +102,7 @@ Example
           :field-type :uri
           :initarg :url
           :documentation "A URL to the license used for the API. MUST be in the format of a URL."))
-    (:metaclass sanity-clause.metaclass:validated-metaclass))
+    (:metaclass sanity-clause:validated-metaclass))
 
 
   (defclass info-object ()
@@ -132,7 +132,7 @@ Example
               :initarg :version
               :documentation "Provides the version of the application API (not to be confused with the specification version)."
               :required t))
-    (:metaclass sanity-clause.metaclass:validated-metaclass))
+    (:metaclass sanity-clause:validated-metaclass))
 
         ;;; Deserialize the json from the file into instances of these classes
 

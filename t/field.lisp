@@ -8,11 +8,10 @@
 (in-package #:sanity-clause/test.field)
 
 (eval-when (:load-toplevel :compile-toplevel)
-  (defvar +manual-only-fields+ '(member-field
-				 nested-field
-                                 list-field)
+  (defvar +manual-only-fields+ '(map-field list-field nested-field one-field-of-field one-schema-of-field member-field)
     "Symbols of field types that require extra data to exist, like :class:`member-field`, which requires a set of symbols as an initarg."))
 
+;; (setf +manual-only-fields+ '(map-field list-field nested-field one-field-of-field one-schema-of-field member-field))
 
 (defmacro with-test-fields (() &body body)
   "Generates a lexical environment where one of each kind of field (classes with a -FIELD suffix) are defined and bound to their name.
@@ -49,99 +48,99 @@ E.g. (let ((string-field (make-field 'string))
 	  (plist-inventory '())
 	  (alist-inventory))
 
-      (ok (= (get-value default-field clos-inventory) 3)
+      (ok (= (sanity-clause.protocol:get-value default-field clos-inventory) 3)
 	  "Default values work for clos objects.")
 
-      (ok (eq (get-value field clos-inventory) :missing)
+      (ok (eq (sanity-clause.protocol:get-value field clos-inventory) :missing)
 	  "A missing value with no default is :missing for clos objects.")
 
-      (ok (= (get-value default-field plist-inventory) 3)
+      (ok (= (sanity-clause.protocol:get-value default-field plist-inventory) 3)
 	  "Default values work for plists.")
 
-      (ok (eq (get-value field plist-inventory) :missing)
+      (ok (eq (sanity-clause.protocol:get-value field plist-inventory) :missing)
 	  "A missing value with no default is :missing for plists.")
 
-      (ok (= (get-value default-field alist-inventory) 3)
+      (ok (= (sanity-clause.protocol:get-value default-field alist-inventory) 3)
 	  "Default values work for alists.")
 
-      (ok (eq (get-value field alist-inventory) :missing)
+      (ok (eq (sanity-clause.protocol:get-value field alist-inventory) :missing)
 	  "A missing value with no default is :missing for alists."))))
 
 
 (deftest test-deserialize
   (with-test-fields ()
     (testing "String field"
-      (ok (deserialize string-field "potato")
+      (ok (sanity-clause.protocol:deserialize string-field "potato")
 	  "deserializes a string.")
 
-      (ok (signals (deserialize string-field 4.5) 'conversion-error)
+      (ok (signals (sanity-clause.protocol:deserialize string-field 4.5) 'conversion-error)
 	  "signals an error when given a number."))
 
     (testing "Integer field"
-      (ok (deserialize integer-field "4")
+      (ok (sanity-clause.protocol:deserialize integer-field "4")
 	  "deserializes a string.")
 
-      (ok (deserialize integer-field 4)
+      (ok (sanity-clause.protocol:deserialize integer-field 4)
 	  "deserializes an integer.")
 
-      (ok (signals (deserialize integer-field 4.5) 'conversion-error)
+      (ok (signals (sanity-clause.protocol:deserialize integer-field 4.5) 'conversion-error)
 	  "signals an error when given a float.")
 
-      (ok (signals (deserialize integer-field "garbage") 'conversion-error)
+      (ok (signals (sanity-clause.protocol:deserialize integer-field "garbage") 'conversion-error)
 	  "signals an error when given a garbage string."))
 
     (testing "Real field"
-      (ok (deserialize real-field "3.1415")
+      (ok (sanity-clause.protocol:deserialize real-field "3.1415")
 	  "deserializes PI as a string ;).")
 
-      (ok (deserialize real-field 3.1415)
+      (ok (sanity-clause.protocol:deserialize real-field 3.1415)
 	  "deserializes PI as a float ;).")
 
-      (ok (signals (deserialize real-field "garbage") 'conversion-error)
+      (ok (signals (sanity-clause.protocol:deserialize real-field "garbage") 'conversion-error)
 	  "signals an error when given a garbage string.")
 
-      (ok (signals (deserialize real-field :garbage) 'conversion-error)
+      (ok (signals (sanity-clause.protocol:deserialize real-field :garbage) 'conversion-error)
 	  "signals an error when given a non-string and non-real datatype."))
 
     (testing "Member field"
       (let ((member-field (make-field 'member :members '(:yam :yukon :idaho))))
-	(ok (deserialize member-field "YaM")
+	(ok (sanity-clause.protocol:deserialize member-field "YaM")
 	    "deserializes a string with different case into its union member.")
 
-	(ok (deserialize member-field :idaho)
+	(ok (sanity-clause.protocol:deserialize member-field :idaho)
 	    "deserializes a keyword that is a union member.")
 
-	(ok (signals (deserialize member-field :woodear) 'conversion-error)
+	(ok (signals (sanity-clause.protocol:deserialize member-field :woodear) 'conversion-error)
 	    "signals an error for a keyword that isn't a member of the union.")
 
-	(ok (signals (deserialize member-field "washington") 'conversion-error)
+	(ok (signals (sanity-clause.protocol:deserialize member-field "washington") 'conversion-error)
 	    "signals an error for a string that isn't a member of the union.")
 
-	(ok (signals (deserialize member-field 3) 'conversion-error)
+	(ok (signals (sanity-clause.protocol:deserialize member-field 3) 'conversion-error)
 	    "signals an error for a non-string-like type.")))
 
     (testing "URI field"
-      (ok (deserialize uri-field "https://something.com/potato?woo=bar#id")
+      (ok (sanity-clause.protocol:deserialize uri-field "https://something.com/potato?woo=bar#id")
           "accpets a valid uri")
 
       (skip "Not sure how to validate uris, yet"
-       ;; (ok (signals (deserialize uri-field "woo//bugs") 'conversion-error)
+       ;; (ok (signals (sanity-clause.protocol:deserialize uri-field "woo//bugs") 'conversion-error)
        ;;     "signals an error on a non-uri value.")
        ))
 
 
     (testing "Boolean field"
-      (ok (eq (deserialize boolean-field "on") t)
+      (ok (eq (sanity-clause.protocol:deserialize boolean-field "on") t)
           "converts a truthy string to t.")
 
-      (ok (signals (deserialize boolean-field "wumbo") 'conversion-error)
+      (ok (signals (sanity-clause.protocol:deserialize boolean-field "wumbo") 'conversion-error)
           "signals an error for an uncertain value."))
 
     (testing "Timestamp field"
-      (ok (typep (deserialize timestamp-field "2006-06-06TZ") 'local-time:timestamp)
+      (ok (typep (sanity-clause.protocol:deserialize timestamp-field "2006-06-06TZ") 'local-time:timestamp)
 	  "converts values to timestamps from LOCAL-TIME.")
 
-      (ok (signals (deserialize timestamp-field "pizza") 'conversion-error)
+      (ok (signals (sanity-clause.protocol:deserialize timestamp-field "pizza") 'conversion-error)
 	  "throws a conversion error on badly formatted timestamp."))))
 
 
@@ -151,7 +150,7 @@ E.g. (let ((string-field (make-field 'string))
     (let ((test-field (make-field 'integer :validator (list (lambda (v) (sanity-clause.validator:int v :max -3))
 							    (lambda (v) (sanity-clause.validator:int v :min 3))))))
       (handler-case
-	  (progn (validate test-field "woo.com")
+	  (progn (sanity-clause.protocol:validate test-field "woo.com")
 		 (fail "invalid data didn't raise a validation-error."))
 
 	(validation-error (e)
@@ -160,18 +159,18 @@ E.g. (let ((string-field (make-field 'string))
 
   (with-test-fields ()
     (testing "Integer field"
-      (ok (eq (validate integer-field 4) nil)
+      (ok (eq (sanity-clause.protocol:validate integer-field 4) nil)
 	  "validates an integer."))
 
     (testing "Email field"
-      (ok (null (validate email-field "yam@potato.spud"))
+      (ok (null (sanity-clause.protocol:validate email-field "yam@potato.spud"))
 	  "validates an email address.")
 
-      (ok (signals (validate email-field "wooo.com") 'validation-error)
+      (ok (signals (sanity-clause.protocol:validate email-field "wooo.com") 'validation-error)
 	  "raises an error when given an invalid email address."))
 
     (testing "String field"
-      (ok (null (validate string-field "some string"))
+      (ok (null (sanity-clause.protocol:validate string-field "some string"))
 	  "accepts any string."))
 
     (testing "Constant field"
@@ -179,24 +178,62 @@ E.g. (let ((string-field (make-field 'string))
 	    (constant-number-field (make-field 'constant :constant 3 :test '=))
 	    (constant-keyword-field (make-field 'constant :data-key 'potato-type :constant :russet)))
 
-	(ok (null (validate constant-string-field "potato"))
+	(ok (null (sanity-clause.protocol:validate constant-string-field "potato"))
 	    "validates a correct string with string=.")
 
-	(ok (signals (validate constant-string-field "worm") 'validation-error)
+	(ok (signals (sanity-clause.protocol:validate constant-string-field "worm") 'validation-error)
 	    "raises an error for a value that isn't the constant according to string=.")
 
-	(ok (null (validate constant-number-field 3))
+	(ok (null (sanity-clause.protocol:validate constant-number-field 3))
 	    "validates a constant number value with =.")
 
-	(ok (signals (validate constant-number-field 5) 'validation-error)
+	(ok (signals (sanity-clause.protocol:validate constant-number-field 5) 'validation-error)
 	    "raises an error for a value that isn't = to a constant.")
 
-	(ok (signals (sanity-clause.field:validate constant-keyword-field :armadillo) 'sanity-clause.field:validation-error)
+	(ok (signals (sanity-clause.protocol:validate constant-keyword-field :armadillo) 'sanity-clause.field:validation-error)
 	    "raises an error if the value doesn't match the constant value")))
 
     (testing "UUID field"
-      (ok (null (validate uuid-field "74827715-C657-4122-B6CF-63E3FA700FF6"))
+      (ok (null (sanity-clause.protocol:validate uuid-field "74827715-C657-4122-B6CF-63E3FA700FF6"))
 	  "accepts a uuid string.")
 
-      (ok (signals (validate uuid-field "74827715-GGGG-4122-B6CF-63E3FA700FF6") 'validation-error)
+      (ok (signals (sanity-clause.protocol:validate uuid-field "74827715-GGGG-4122-B6CF-63E3FA700FF6") 'validation-error)
 	  "raises validation errors for something that looks like a uuid, but has forbidden 'G's in it."))))
+
+
+(deftest test-one-schema-of-field
+  (testing "A one-schema-of-field with two options"
+
+    (defclass pizza ()
+      ((name :initarg :name
+             :type string))
+      (:metaclass sanity-clause.schema:validated-metaclass))
+
+    (defclass weasel-count ()
+      ((count :initarg :count
+              :type integer
+              :validate (lambda (v) (v:int v :min 0))))
+      (:metaclass sanity-clause.schema:validated-metaclass))
+
+    (let ((dumb-field (sanity-clause.field:make-field :one-schema-of :schema-choices '(pizza weasel-count))))
+      (ok (typep (sanity-clause.protocol:resolve dumb-field '(:name "pepperoni")) 'pizza)
+          "decodes the first option.")
+
+      (ok (typep (sanity-clause.protocol:resolve dumb-field '(:count "112")) 'weasel-count)
+          "decodes the second option.")
+
+      (ok (signals (sanity-clause.protocol:resolve dumb-field '(:armadillo :arnie)) 'sanity-clause.field:conversion-error)
+          "signals an error if it can't decode either option."))))
+
+
+(deftest test-one-field-of-field
+  (let ((field (sanity-clause:make-field :one-field-of :data-key :data :field-choices '((:string :validator (:not-empty)) :integer))))
+
+    (ok (typep (sanity-clause.protocol:resolve field '(:data "hello")) 'string)
+        "accepts a string.")
+
+    (ok (typep (sanity-clause.protocol:resolve field '(:data 4)) 'integer)
+        "accepts an integer.")
+
+    (ok (signals (sanity-clause.protocol:resolve field (list :data (local-time:now))) 'sanity-clause.field:conversion-error)
+        "signals an error for a datetime.")))

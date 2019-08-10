@@ -7,9 +7,9 @@
 
 
 (deftest test-load-schema
-  (let* ((schema (sanity-clause.loadable-schema:load (asdf:system-relative-pathname :sanity-clause/test "t/fixtures/schema.sexp")))
+  (let* ((schema (sanity-clause.loadable-schema:load-schema (asdf:system-relative-pathname :sanity-clause/test "t/fixtures/schema.sexp")))
          (raw-data '(:port 3 :name "something" :mode "on" :boolean "no"))
-         (data (sanity-clause.schema:load schema raw-data)))
+         (data (sanity-clause.protocol:load schema raw-data)))
 
     (ok (typep (getf data :port) 'integer)
         "port is an integer.")
