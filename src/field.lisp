@@ -19,27 +19,33 @@
 	   #:real-field
 	   #:constant-field
 	   #:timestamp-field
+           #:uri-field
            #:boolean-field
 	   #:uuid-field
+
+           #:map-field
+           #:one-schema-of-field
+           #:one-field-of-field
+
+           ;; Fields defined in nested-fields.lisp
+           ;; #:map-field
+           ;; #:list-field
+           ;; #:nested-field
+           ;; #:one-field-of-field
+           ;; #:one-schema-of-field
 
 	   ;; Readers
 	   #:attribute-of
            #:data-key-of
 
-	   ;; Methods
-	   #:deserialize
-	   #:validate
-	   #:get-value
-
 	   ;; Errors
 	   #:validation-error
 	   #:required-value-error
 	   #:conversion-error
-	   #:error-messages-of
-	   )
+	   #:error-messages-of)
   (:documentation "Field classes that can be used to validate data.
 
-Also contains :function:`get-value`, :function:`deserialize`, and :function:`validate`, which represent the lifecycle of loading data from some other object."))
+Also contains :function:`sanity-clause.protocol:get-value`, :function:`sanity-clause.protocol:deserialize`, and :function:`sanity-clause.protocol:validate`, which represent the lifecycle of loading data from some other object."))
 
 (in-package :sanity-clause.field)
 
@@ -49,7 +55,7 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
 
 
 (defclass field ()
-  ((attribute :type (or null symbol)
+  ((attribute :type (or null symbol string)
 	      :initarg :attribute
 	      :initform nil
 	      :reader attribute-of
@@ -57,7 +63,7 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
    (data-key :type (or null string symbol)
              :initform nil
 	     :initarg :data-key
-	     :reader data-key-of
+	     :accessor data-key-of
 	     :documentation "Name of the attribute to read the field's value from when deserializing, if null, inferred form the name of the field.")
    (default :type t
 	    :initarg :default
@@ -79,6 +85,80 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
 	     :reader required-p
 	     :documentation "Is this field required?  Cause the field to fail validation if it's not filled."))
   (:documentation "A base class for all fields that controls how they are (de?)serialized."))
+
+;;; The most generic forms of these methods are defined here
+(defun all-validators (field)
+  "Returns a generator function that yields a validator function each call."
+  (declare (type field field))
+
+  (etypecase (validator-of field)
+    (null (list (constantly nil)))
+    (symbol (list (validator-of field)))
+    (function (list (validator-of field)))
+    (list (validator-of field))))
+
+
+(defmethod sanity-clause.protocol:resolve :around ((field field) data &optional parents)
+  (handler-case (call-next-method)
+    ((or conversion-error validation-error) (e)
+      ;; set parents and reraise
+      (setf (parents-of e) parents)
+      (error e))))
+
+
+(defmethod sanity-clause.protocol:resolve ((field field) data &optional parents)
+  (declare (ignore parents))
+
+  (let ((value (->> data
+                    (sanity-clause.protocol:get-value field)
+                    (sanity-clause.protocol:deserialize field))))
+
+    (sanity-clause.protocol:validate field value)
+
+    (values value)))
+
+
+(defmethod sanity-clause.protocol:deserialize :around ((field field) value)
+  ;; For some nicer error handling - wrap other methods and coerce thigns to conversion-error
+  ;; so we know they failed here.
+  (handler-case (call-next-method)
+    (error (e)
+       (error 'conversion-error :from-error e
+                                :field field
+                                :value value))))
+
+
+(defmethod sanity-clause.protocol:deserialize ((field field) value)
+  (declare (ignore field))
+
+  value)
+
+
+(defmethod sanity-clause.protocol:serialize ((field field) value)
+  (declare (ignore field))
+
+  value)
+
+
+(defmethod sanity-clause.protocol:validate ((field field) value)
+  (when-let ((errors (->> (loop
+                            for validator in (all-validators field)
+
+                            collecting (funcall validator value))
+                          (remove-if #'null))))
+
+    (error 'validation-error :error-messages errors
+                             :field field
+                             :value value)))
+
+
+(defmethod sanity-clause.protocol:get-value ((field field) object)
+  (multiple-value-bind (value found-p)
+	 (sanity-clause.util:get-value object (data-key-of field) (default-of field))
+
+    (if (and (required-p field) (not found-p))
+        (error 'required-value-error :field-name (data-key-of field))
+        value)))
 
 
 (defun load-field-p (field)
@@ -126,9 +206,18 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
     c2mop:ensure-finalized))
 
 
+;;; Everything below here is specific to a class of field
+
 (define-final-class string-field (field)
   ()
   (:documentation "A field that contains a string."))
+
+
+;; This also should cover some child fields like email
+(defmethod sanity-clause.protocol:deserialize ((field string-field) value)
+  (etypecase value
+    (string value)))
+
 
 
 (define-final-class member-field (field)
@@ -138,42 +227,43 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
   (:documentation "A field that expects a member of a set of symbols."))
 
 
-(define-final-class nested-element ()
-  ((element-type :type (or field symbol)
-                 :initarg :element-type
-                 :initform (error "A nested field requires an element-type to deserialize members to.")
-                 :reader element-type-of
-                 :documentation "The field that respresents the elements of the list.")))
-
-(define-final-class list-field (field nested-element)
-  ()
-  (:documentation "A field that contains a list of values satsified by another field."))
-
-
-
-;; (defmethod print-object ((o list-field) stream)
-;;   (print-unreadable-object (o stream :type t :identity t)
-;;     (format stream "element-type: ~a" (element-type-of o))))
-
-
-(define-final-class nested-field (field nested-element)
-  ()
-  (:documentation "A field that represents a complex object located at this slot."))
-
-
-;; (defmethod print-object ((o nested-field) stream)
-;;   (print-unreadable-object (o stream :type t :identity t)
-;;     (format stream "element-type: ~a" (element-type-of o))))
-
+(defmethod sanity-clause.protocol:deserialize ((field member-field) value)
+  (etypecase value
+    ((or string symbol)
+     (if-let ((member (find value (members-of field) :test #'string-equal)))
+       member
+       (error "Value \"~a\" couldn't be found in set ~a"
+              value
+              (members-of field))))))
 
 (define-final-class boolean-field (field)
   ()
   (:documentation "A field type for bolean values."))
 
 
+(defmethod sanity-clause.protocol:deserialize ((field boolean-field) value)
+  (etypecase value
+    (string (cond
+              ((member value '("y" "yes" "t" "true"  "on"  "enable" ) :test #'string-equal) t)
+              ((member value '("n" "no"  "f" "false" "off" "disable") :test #'string-equal) nil)
+              (t (error "couldn't convert ~a to a boolean." value))))
+    (boolean value)))
+
+
 (define-final-class email-field (string-field)
   ((validator :initform 'sanity-clause.validator:email))
   (:documentation "A field for values that should be emails."))
+
+
+(define-final-class uri-field (string-field)
+  ()
+  (:documentation "A field for values that should be emails."))
+
+
+(defmethod sanity-clause.protocol:deserialize ((field uri-field) value)
+  (etypecase value
+    (string (quri:uri value))
+    (quri.uri:uri value)))
 
 
 (define-final-class uuid-field (string-field)
@@ -192,9 +282,33 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
   (:documentation "A field that expects to get the same value every time.  Will throw a :class:`conversion-error` if VALUE isn't equal to CONSTANT according to TEST."))
 
 
+(defmethod sanity-clause.protocol:validate ((field constant-field) value)
+  (unless (funcall (constant-test-of field) (constant-value-of field) value)
+    (error 'validation-error :error-messages (list (format nil "Value ~a is not the constant value ~a" value (constant-value-of field)))
+                             :field field
+                             :value value)))
+
+
+(defmethod sanity-clause.protocol:get-value ((field constant-field) object)
+  (multiple-value-bind (value found-p)
+	 (sanity-clause.util:get-value object (data-key-of field) (default-of field))
+
+    (cond
+      ((and (required-p field) (not found-p))
+       (error 'required-value-error :field-name (data-key-of field)))
+      ((not found-p) (constant-value-of field))
+      (t value))))
+
+
 (define-final-class integer-field (field)
   ((validator :initform 'sanity-clause.validator:int))
   (:documentation "A field that holds an integer value."))
+
+
+(defmethod sanity-clause.protocol:deserialize ((field integer-field) value)
+  (etypecase value
+    (integer value)
+    (string (parse-integer value))))
 
 
 (define-final-class real-field (field)
@@ -202,15 +316,28 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
   (:documentation "A field that contains a real value (eg. possibly a float)."))
 
 
+
+(defmethod sanity-clause.protocol:deserialize ((field real-field) value)
+  (etypecase value
+    (real value)
+    (string (parse-float:parse-float value))))
+
+
 (define-final-class timestamp-field (field)
   ()
   (:documentation "A field that contains a timestamp"))
 
 
+(defmethod sanity-clause.protocol:deserialize ((field timestamp-field) value)
+  (local-time:parse-timestring value))
+
+
 (define-condition field-error (error)
   ((field :type field
 	  :initarg :field
-	  :reader field-of))
+	  :reader field-of)
+   (parents :accessor parents-of
+           :initarg :parents))
   (:documentation "Base class for all errors thrown by :package:`sanity-clause.field`."))
 
 
@@ -263,140 +390,138 @@ Also contains :function:`get-value`, :function:`deserialize`, and :function:`val
   (format stream "A value for field ~A is required but none was provided." (missing-field-name-of condition)))
 
 
-(defun all-validators (field)
-  "Returns a generator function that yields a validator function each call."
-  (declare (type field field))
-
-  (etypecase (validator-of field)
-    (null (list (constantly nil)))
-    (symbol (list (validator-of field)))
-    (function (list (validator-of field)))
-    (list (validator-of field))))
+(defclass nested-element ()
+  ((element-type :type (or field symbol)
+                 :initarg :element-type
+                 :initform (error "A nested field requires an element-type to deserialize members to.")
+                 :reader element-type-of
+                 :documentation "The field that respresents the elements of the list.")))
 
 
-(defmacro map-error (into-error-class &body body)
-  `(handler-case (progn ,@body)
-     (error (e)
-       (error ',into-error-class :from-error e
-				 :field field
-				 :value value))))
+(define-final-class list-field (field nested-element)
+  ()
+  (:documentation "A field that contains a list of values satsified by another field."))
 
 
-(defgeneric deserialize (field value)
-  (:documentation "Converts the value retrieved from the raw data into the datatype the field expects to work with, or fails, raising a :class:`conversion-error`.")
-
-  (:method ((field field) value)
-    (declare (ignore field))
-
-    value)
-
-  ;; This also should cover some child fields like email
-  (:method ((field string-field) value)
-    (map-error conversion-error
-      (etypecase value
-	(string value))))
-
-  (:method ((field integer-field) value)
-    (map-error conversion-error
-      (etypecase value
-	(integer value)
-	(string (parse-integer value)))))
-
-  (:method ((field real-field) value)
-    (map-error conversion-error
-      (etypecase value
-	(real value)
-	(string (parse-float:parse-float value)))))
-
-  (:method ((field member-field) value)
-    (map-error conversion-error
-      (etypecase value
-	((or string symbol)
-	 (if-let ((member (find value (members-of field) :test #'string-equal)))
-	   member
-	   (error "Value \"~a\" couldn't be found in set ~a"
-                  value
-                  (members-of field)))))))
-
-  (:method ((field boolean-field) value)
-    (map-error conversion-error
-      (etypecase value
-	(string (cond
-		  ((member value '("y" "yes" "t" "true"  "on"  "enable" ) :test #'string-equal) t)
-		  ((member value '("n" "no"  "f" "false" "off" "disable") :test #'string-equal) nil)
-		  (t (error "couldn't convert ~a to a boolean." value))))
-	(boolean value))))
-
-  (:method ((field timestamp-field) value)
-    (map-error conversion-error
-      (local-time:parse-timestring value)))
+(define-final-class nested-field (field nested-element)
+  ()
+  (:documentation "A field that represents a complex object located at this slot."))
 
 
-  ;; For fields that inherit from nested-element, this behavior is a
-  ;; bit circular.  The value should be the initargs for an inner
-  ;; schema.
-  (:method ((field nested-field) value)
-    (map-error conversion-error
-      (with-slots (element-type) field
-        (apply #'make-instance element-type value))))
+(defmethod sanity-clause.protocol:deserialize ((field nested-field) value)
+  (sanity-clause.protocol:load (element-type-of field) value))
 
 
-  (:method ((field list-field) value)
-    (map-error conversion-error
-      (etypecase value
-        (trivial-types:proper-list
-         (with-slots (element-type) field
-           (mapcar (lambda (item) (apply #'make-instance element-type item)) value)))))))
+(defmethod sanity-clause.protocol:deserialize ((field list-field) value)
+  (etypecase value
+    (trivial-types:proper-list
+     (with-slots (element-type) field
+       (mapcar (lambda (item) (sanity-clause.protocol:load element-type item)) value)))))
 
 
-(defgeneric serialize (field value)
-  (:documentation "Converts the value of a field into another representation.")
+(defclass map-field (field)
+  ((key-field :initarg :key-field
+              :accessor key-field-of
+              :initform :string)
+   (value-field :initarg :value-field
+                :accessor value-field-of
+                :initform :string))
+  (:documentation "A field that maps values of one kind to values to another kind, like strings to strings, or numbers to objects.
+examples::
 
-  (:method ((field field) value)
-    value))
-
-
-(defgeneric validate (field value)
-  (:documentation "Run the validation checks for a given field and raise a :class:`sanity-clause.field:validation-error` if it is invalid.")
-
-  (:method ((field field) value)
-    (when-let ((errors (->> (loop
-			      for validator in (all-validators field)
-
-			      collecting (funcall validator value))
-			    (remove-if #'null))))
-
-      (error 'validation-error :error-messages errors
-			       :field field
-			       :value value)))
-
-  (:method ((field constant-field) value)
-    (unless (funcall (constant-test-of field) (constant-value-of field) value)
-      (error 'validation-error :error-messages (list (format nil "Value ~a is not the constant value ~a" value (constant-value-of field)))
-			       :field field
-			       :value value))))
+  (make-field :map :key-field :string :value-field :integer)
+  (deserialize * '((\"potato\" . 4) (\"chimp\" . 11)))
+"))
 
 
-(defmacro with-value-and-found-p (&body body)
-  `(let ((field-marker (or (data-key-of field) field-name)))
-     (multiple-value-bind (value found-p)
-	 (sanity-clause.util:get-value object field-marker (default-of field))
-       ,@body)))
+
+(defmethod sanity-clause.protocol:resolve ((field map-field) data &optional parents)
+  (let (accumulator)
+    (with-slots (key-field value-field) field
+      (sanity-clause.util:do-key-values (k v) data
+        (push (cons (resolve key-field k (list* key-field parents))
+                    (resolve value-field v (list* value-field parents)))
+              accumulator)))
+    accumulator))
 
 
-(defgeneric get-value (field object &optional field-name)
-  (:documentation "Tries to fetch the value corresponding to the field from some datastructure.  :param:`field-name` is used if no attribute is explicitly set on the field.")
+(defclass one-field-of-field (field)
+  ((field-choices :type list
+                  :initarg :field-choices
+                  :accessor field-choices-of
+                  :initform (error ":field-choices is required in one-field-of-field.")
+                  :documentation "Fields that this field could decode to."))
+  (:documentation "A field type that allows any of the fields specified."))
 
-  (:method ((field field) object &optional field-name)
-    (with-value-and-found-p
-      (if (and (required-p field) (not found-p))
-          (error 'required-value-error :field-name field-marker)
-          value)))
 
-  (:method ((field constant-field) object &optional field-name)
-    (with-value-and-found-p
-      (cond
-        ((and (required-p field) (not found-p))
-         (error 'required-value-error :field-name field-marker))
-        ((not found-p) (constant-value-of field))
-        (t value)))))
+(defmethod initialize-instance :after ((field one-field-of-field) &key)
+
+  (labels ((ensure-subfield (field-args-or-field)
+             (etypecase field-args-or-field
+               ((or symbol cons)
+                (apply #'make-field (make-args field-args-or-field)))
+               (field
+                ;; The sub-field needs the same data-key as the parent to get the data
+                ;; might as well set attribute, too
+                (with-slots (data-key attribute) field-args-or-field
+                  (setf data-key (data-key-of field)
+                        attribute (attribute-of field)))
+                field-args-or-field)))
+
+           (make-args (subfield-args)
+             (destructuring-bind (type . args) (ensure-list subfield-args)
+               ;; insert overridden args before the given ones so those values get
+               ;; used instead of any later ones (as a result of how plists work).
+               (list* type
+                      :data-key (data-key-of field)
+                      :attribute (attribute-of field)
+                      (sanity-clause.validator:hydrate-validators args)))))
+
+    (setf (field-choices-of field) (mapcar #'ensure-subfield (field-choices-of field))))
+
+  field)
+
+
+(defmethod sanity-clause.protocol:resolve ((field one-field-of-field) data &optional parents)
+  (loop for (try-field . rest) on (field-choices-of field)
+        ;; if the cdr of the field options is nil, we're out of other options
+        for last-p = (not rest)
+
+        do (handler-case (return (sanity-clause.protocol:resolve try-field data (list* field parents)))
+             (t (e)
+               (when last-p
+                 (error 'conversion-error
+                        :from-error e
+                        :field field
+                        :parents (reverse (list* field parents))))))))
+
+
+(defclass one-schema-of-field (field)
+  ((schema-choices :type list
+                   :initarg :schema-choices
+                   :accessor schema-choices-of
+                   :documentation "Fields that this field could decode to."
+                   :initform (error ":schema-choices is required in one-schema-of-field.")))
+  (:documentation "A field type that allows any of the schemas specified."))
+
+
+(defmethod initialize-instance :after ((field one-schema-of-field) &key)
+  (flet ((ensure-class (symbol-or-class)
+           (if (c2mop:classp symbol-or-class)
+               symbol-or-class
+               (find-class symbol-or-class))))
+
+    (setf (schema-choices-of field) (mapcar #'ensure-class (schema-choices-of field))))
+  field)
+
+
+(defmethod sanity-clause.protocol:resolve ((field one-schema-of-field) data &optional parents)
+  (loop for (try-schema . rest) on (schema-choices-of field)
+        ;; if the cdr of the field options is nil, we're out of other options
+        for last-p = (not rest)
+
+        do (handler-case (return (sanity-clause.protocol:load try-schema data))
+             (t (e) (when last-p (error 'conversion-error
+                                        :from-error e
+                                        :field field
+                                        :parents (reverse (list* field parents))))))))

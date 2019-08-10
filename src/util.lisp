@@ -2,7 +2,8 @@
   (:use #:cl
 	#:cl-arrows
 	#:alexandria)
-  (:export #:get-value))
+  (:export #:get-value
+           #:do-key-values))
 
 (in-package #:sanity-clause.util)
 
@@ -16,7 +17,7 @@
 
 
 (defun get-value (object key &optional default)
-  "Generic reader function for lists and class instances.  Returns a ``(values value found-p)`` so you can tell if the value was in the list or not.  Can also read from then environment if given ``:env`` as OBJECT."
+  "Generic reader function for lists and class instances.  Returns a ``(values value found-p)`` so you can tell if the value was in the list or not.  Can also read from the environment if given ``:env`` as OBJECT."
 
   (if (and (keywordp object) (eq object :env))
       ;; if key is a string, assume it's already an environment variable name like MY_VARIABLE,
@@ -25,6 +26,7 @@
 				 (string key)
 				 (symbol (lisp-name->env-name key)))))
 	(values (or (uiop:getenvp env-variable-name) default) (not (not (uiop:getenvp env-variable-name)))))
+
       (etypecase object
 	(standard-object
 	 (if (and (slot-exists-p object key) (slot-boundp object key))
@@ -37,6 +39,19 @@
 
 	(trivial-types:association-list
 
-	 (let* ((assoc-cons (assoc key object))
+	 (let* ((assoc-cons (assoc key object :test #'string-equal))
 		(value (or (cdr assoc-cons) default)))
 	   (values value (not (null assoc-cons))))))))
+
+
+(defmacro do-key-values ((key value) data &body body)
+  (with-gensyms (alist)
+    `(let ((,alist (etypecase ,data
+                     (hash-table
+                      (hash-table-alist ,data))
+                     (trivial-types:property-list
+                      (plist-alist ,data))
+                     (trivial-types:association-list
+                      ,data))))
+       (loop for (,key . ,value) in ,alist
+             do (progn ,@body)))))

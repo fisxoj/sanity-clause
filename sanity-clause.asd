@@ -1,23 +1,24 @@
 (defsystem sanity-clause
   :author "Matt Novenstern"
   :license "LLGPLv3+"
-  :version "0.4.0"
+  :version "0.5.0"
   :homepage "https://fisxoj.github.io/sanity-clause/"
   :depends-on ("alexandria"
-	       "trivial-types"
                "cl-arrows"
+               "cl-ppcre"
                "closer-mop"
 	       "str"
+	       "trivial-types"
 	       "validate"
 	       "parse-float"
-	       "cl-ppcre")
+               "quri")
   :pathname "src"
   :components ((:file "util")
                (:file "validator")
+               (:file "protocol")
 	       (:file "field")
                (:file "loadable-schema")
                (:file "schema")
-               (:file "metaclass")
 	       (:file "sanity-clause"))
   :long-description #.(uiop:read-file-string #P"README.rst")
   :in-order-to ((test-op (test-op sanity-clause/test))))
@@ -30,10 +31,10 @@
   :components ((:file "util")
 	       (:file "field")
                (:file "loadable-schema")
-               (:file "schema")
-               (:file "metaclass"))
+               (:file "schema"))
   :perform (test-op (op c)
-		    (funcall (read-from-string "rove:run") c
+                    (declare (ignore op))
+		    (uiop:symbol-call :rove :run c
 			     :env '(("VALUE" . "2")
 				    ("POTATO" . "YAM")
 				    ("AGE" . "11")

@@ -1,12 +1,31 @@
 (defpackage sanity-clause
   (:use #:cl
-	#:alexandria)
+	#:alexandria
+        #:sanity-clause.protocol)
   (:import-from #:sanity-clause.field
 		#:make-field)
-  (:shadowing-import-from #:sanity-clause.schema
+  (:import-from #:sanity-clause.schema
+		#:validated-metaclass)
+  (:import-from #:sanity-clause.loadable-schema
+		#:load-schema)
+  (:shadowing-import-from #:sanity-clause.protocol
 			  #:load)
-  (:export #:load
-	   #:make-field)
+  (:export #:resolve
+	   #:deserialize
+	   #:serialize
+	   #:validate
+	   #:get-value
+           #:load
+           #:dump
+
+           ;; loadable schema
+           #:load-schema
+
+           ;; field stuff
+	   #:make-field
+
+           ;; schema stuff
+           #:validated-metaclass)
 
   (:documentation "Main package of the :package:`sanity-clause` system.
 

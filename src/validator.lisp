@@ -10,6 +10,7 @@
 	   #:uuid
 	   #:not-empty
 
+           #:hydrate-validators
            #:make-validator)
   (:documentation "Some validation functions that can be used with fields to make sure data has certain properties."))
 
@@ -22,6 +23,14 @@
   (let ((keyword-spec (ensure-list keyword-spec)))
 
     (lambda (value) (apply (find-symbol (string-upcase (car keyword-spec)) (find-package :sanity-clause.validator)) value (cdr keyword-spec)))))
+
+
+(defun hydrate-validators (spec-plist)
+  "Takes a list of validators in the form of keywords and turns them into living function references."
+
+  (when-let ((validator-spec (getf spec-plist :validator)))
+    (setf (getf spec-plist :validator) (mapcar #'make-validator validator-spec)))
+  spec-plist)
 
 
 (defmacro convert-validate-validator (&body body)

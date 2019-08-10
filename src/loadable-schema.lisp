@@ -1,7 +1,5 @@
 (defpackage sanity-clause.loadable-schema
   (:use #:cl #:alexandria)
-  (:shadow #:load)
-
   (:documentation "Loadable schemas can be expressed as plists of keywords and then can be loaded by :function:`load`, either from a file, or a list.
 
 You could, for example, define the configuration of a program that reads from the environment with::
@@ -16,12 +14,12 @@ your ``my-schema.sexp`` might look like::
 
   (:name (:string :validator (:not-empty) :default \"lisa\" :required t)
    :age (:integer :validator ((:int :min 0)) :required t))")
-  (:export #:load))
+  (:export #:load-schema))
 
 (in-package :sanity-clause.loadable-schema)
 
 
-(defun load (schema)
+(defun load-schema (schema)
   "Takes a :type:`pathname` or schema spec list like::
 
   (:key (:string :validator (:not-empty) :default \"potato\")
@@ -29,12 +27,7 @@ your ``my-schema.sexp`` might look like::
 
 and returns a schema plist with fields."
 
-  (flet ((hydrate-validators (spec)
-           (when-let ((validator-spec (getf spec :validator)))
-             (setf (getf spec :validator) (mapcar #'sanity-clause.validator:make-validator validator-spec)))
-           spec))
-
-    (typecase schema
-      (pathname (load (uiop:with-safe-io-syntax () (uiop:read-file-form schema))))
-      (cons (loop for (key (type . spec)) on schema by #'cddr
-                  appending (list key (apply #'sanity-clause.field:make-field type (hydrate-validators spec))))))))
+  (typecase schema
+    (pathname (load-schema (uiop:with-safe-io-syntax () (uiop:read-file-form schema))))
+    (cons (loop for (key (type . spec)) on schema by #'cddr
+                appending (list key (apply #'sanity-clause.field:make-field type (append (list :data-key key) (sanity-clause.validator:hydrate-validators spec))))))))
