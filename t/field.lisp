@@ -35,8 +35,10 @@ E.g. (let ((string-field (make-field 'string))
 (deftest test-find-field
   (ok (sanity-clause.field:find-field :string)
       "can find a field by symbol.")
+
   (ok (sanity-clause.field:find-field "real")
       "can find a field by string.")
+
   (ok (signals (sanity-clause.field:find-field nil))
       "raises an error when it can't find the given field."))
 
@@ -227,13 +229,28 @@ E.g. (let ((string-field (make-field 'string))
 
 
 (deftest test-one-field-of-field
-  (let ((field (sanity-clause:make-field :one-field-of :data-key :data :field-choices '((:string :validator (:not-empty)) :integer))))
+  (testing "a one-of-field defined with field classes"
+    (let* ((string-field (make-field :string :validator 'sanity-clause.validator:not-empty))
+           (integer-field (make-field :integer))
+           (field (sanity-clause:make-field :one-field-of :data-key :data :field-choices (list string-field integer-field))))
 
-    (ok (typep (sanity-clause.protocol:resolve field '(:data "hello")) 'string)
-        "accepts a string.")
+      (ok (typep (sanity-clause.protocol:resolve field '(:data "hello")) 'string)
+          "accepts a string.")
 
-    (ok (typep (sanity-clause.protocol:resolve field '(:data 4)) 'integer)
-        "accepts an integer.")
+      (ok (typep (sanity-clause.protocol:resolve field '(:data 4)) 'integer)
+          "accepts an integer.")
 
-    (ok (signals (sanity-clause.protocol:resolve field (list :data (local-time:now))) 'sanity-clause.field:conversion-error)
-        "signals an error for a datetime.")))
+      (ok (signals (sanity-clause.protocol:resolve field (list :data (local-time:now))) 'sanity-clause.field:conversion-error)
+          "signals an error for a datetime.")))
+
+  (testing "a one-of-field defined with keyword syntax"
+    (let ((field (sanity-clause:make-field :one-field-of :data-key :data :field-choices '((:string :validator (:not-empty)) :integer))))
+
+      (ok (typep (sanity-clause.protocol:resolve field '(:data "hello")) 'string)
+          "accepts a string.")
+
+      (ok (typep (sanity-clause.protocol:resolve field '(:data 4)) 'integer)
+          "accepts an integer.")
+
+      (ok (signals (sanity-clause.protocol:resolve field (list :data (local-time:now))) 'sanity-clause.field:conversion-error)
+          "signals an error for a datetime."))))

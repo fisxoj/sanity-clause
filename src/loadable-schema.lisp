@@ -27,12 +27,7 @@ your ``my-schema.sexp`` might look like::
 
 and returns a schema plist with fields."
 
-  (flet ((hydrate-validators (spec)
-           (when-let ((validator-spec (getf spec :validator)))
-             (setf (getf spec :validator) (mapcar #'sanity-clause.validator:make-validator validator-spec)))
-           spec))
-
-    (typecase schema
-      (pathname (load (uiop:with-safe-io-syntax () (uiop:read-file-form schema))))
-      (cons (loop for (key (type . spec)) on schema by #'cddr
-                  appending (list key (apply #'sanity-clause.field:make-field type (append (hydrate-validators spec) (list :data-key key)))))))))
+  (typecase schema
+    (pathname (load (uiop:with-safe-io-syntax () (uiop:read-file-form schema))))
+    (cons (loop for (key (type . spec)) on schema by #'cddr
+                appending (list key (apply #'sanity-clause.field:make-field type (append (list :data-key key) (sanity-clause.validator:hydrate-validators spec))))))))

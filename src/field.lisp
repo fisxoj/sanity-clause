@@ -105,7 +105,8 @@ Also contains :function:`sanity-clause.protocol:get-value`, :function:`sanity-cl
 (defmethod sanity-clause.protocol:resolve ((field field) data &optional parents)
   (declare (ignore parents))
 
-  (let ((value (->> (sanity-clause.protocol:get-value field data)
+  (let ((value (->> data
+                    (sanity-clause.protocol:get-value field)
                     (sanity-clause.protocol:deserialize field))))
 
     (sanity-clause.protocol:validate field value)
@@ -451,20 +452,28 @@ examples::
 
 (defmethod initialize-instance :after ((field one-field-of-field) &key)
 
-  (flet ((ensure-subfield (field-args)
-           (apply #'make-field field-args))
-         ;; The sub-field needs the same data-key as the parent to get the data
-         ;; might as well set attribute, too
-         (make-args (subfield)
-           (destructuring-bind (type . args) (ensure-list subfield)
-             ;; insert overridden args before the given ones so those values get
-             ;; used instead of any later ones (as a result of how plists work).
-             (list* type
-                    :data-key (data-key-of field)
-                    :attribute (attribute-of field)
-                    args))))
+  (labels ((ensure-subfield (field-args-or-field)
+             (etypecase field-args-or-field
+               ((or symbol cons)
+                (apply #'make-field (make-args field-args-or-field)))
+               (field
+                ;; The sub-field needs the same data-key as the parent to get the data
+                ;; might as well set attribute, too
+                (with-slots (data-key attribute) field-args-or-field
+                  (setf data-key (data-key-of field)
+                        attribute (attribute-of field)))
+                field-args-or-field)))
 
-    (setf (field-choices-of field) (mapcar (compose #'ensure-subfield #'make-args) (field-choices-of field))))
+           (make-args (subfield-args)
+             (destructuring-bind (type . args) (ensure-list subfield-args)
+               ;; insert overridden args before the given ones so those values get
+               ;; used instead of any later ones (as a result of how plists work).
+               (list* type
+                      :data-key (data-key-of field)
+                      :attribute (attribute-of field)
+                      (sanity-clause.validator:hydrate-validators args)))))
+
+    (setf (field-choices-of field) (mapcar #'ensure-subfield (field-choices-of field))))
 
   field)
 
@@ -474,11 +483,13 @@ examples::
         ;; if the cdr of the field options is nil, we're out of other options
         for last-p = (not rest)
 
-        do (handler-case (return (resolve try-field data (list* field parents)))
-             (t (e) (when last-p (error 'conversion-error
-                                        :from-error e
-                                        :field field
-                                        :parents (reverse (list* field parents))))))))
+        do (handler-case (return (sanity-clause.protocol:resolve try-field data (list* field parents)))
+             (t (e)
+               (when last-p
+                 (error 'conversion-error
+                        :from-error e
+                        :field field
+                        :parents (reverse (list* field parents))))))))
 
 
 (defclass one-schema-of-field (field)
@@ -501,11 +512,11 @@ examples::
 
 
 (defmethod sanity-clause.protocol:resolve ((field one-schema-of-field) data &optional parents)
-  (loop for (try-field . rest) on (schema-choices-of field)
+  (loop for (try-schema . rest) on (schema-choices-of field)
         ;; if the cdr of the field options is nil, we're out of other options
         for last-p = (not rest)
 
-        do (handler-case (return (sanity-clause.protocol:load try-field data))
+        do (handler-case (return (sanity-clause.protocol:load try-schema data))
              (t (e) (when last-p (error 'conversion-error
                                         :from-error e
                                         :field field
