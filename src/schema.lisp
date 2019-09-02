@@ -130,6 +130,14 @@ In the event the type isn't a simple type, assume it's a class with metaclass :c
   ())
 
 
+(defun validated-slots (class)
+  "In a world where validated-metaclass gets mixed in with another metaclass, not all slots are necessarily ones with fields defined on them.  Try to ignore them and assume the best."
+
+  (->> class
+      c2mop:class-slots
+      (remove-if-not (lambda (slot) (c2cl:subclassp (class-of slot) 'validated-slot-definition)))))
+
+
 (defmethod make-instance :around ((class validated-metaclass) &rest initargs)
 
   (c2mop:ensure-finalized class)
@@ -143,23 +151,29 @@ In the event the type isn't a simple type, assume it's a class with metaclass :c
                          :env
                          initargs)))
 
+    ;; FIXME: gotta collect initargs for slots we aren't validating, too
     (dolist (slot (c2mop:class-slots class))
 
-      (let* ((field (field-of slot))
-             (initarg (first (c2mop:slot-definition-initargs slot))))
+      (let ((initarg (first (c2mop:slot-definition-initargs slot))))
 
-        (when (and (sanity-clause.field:load-field-p field)
-                   ;; Don't bother trying to load something we don't have a data-key for
-                   (sanity-clause.field:data-key-of field))
+        (etypecase slot
+          (validated-slot-definition
+           (let ((field (field-of slot)))
 
-          (let ((value (->>
-                        (sanity-clause.util:get-value data-source initarg (sanity-clause.field::default-of (field-of slot)))
-                        (sanity-clause.protocol:deserialize field))))
+             (when (and (sanity-clause.field:load-field-p field)
+                        ;; Don't bother trying to load something we don't have a data-key for
+                        (sanity-clause.field:data-key-of field))
 
-            (sanity-clause.protocol:validate field value)
+               (let ((value (->>
+                             (sanity-clause.util:get-value data-source initarg (sanity-clause.field::default-of (field-of slot)))
+                             (sanity-clause.protocol:deserialize field))))
 
-            (appendf validated-initargs
-                     (list initarg value))))))
+                 (sanity-clause.protocol:validate field value)
+
+                 (appendf validated-initargs
+                          (list initarg value))))))
+          (c2mop:standard-slot-definition
+           (appendf validated-initargs (getf initargs initarg))))))
 
     (apply #'call-next-method class validated-initargs)))
 
@@ -191,10 +205,12 @@ In the event the type isn't a simple type, assume it's a class with metaclass :c
   'validated-direct-slot-definition)
 
 
-(defmethod c2mop:effective-slot-definition-class ((class validated-metaclass) &key)
-
-  'validated-effective-slot-definition)
-
+(defmethod c2mop:compute-effective-slot-definition :around ((class validated-metaclass) name dslotds)
+  (declare (ignore name))
+  ;; use our effective slot if some ancestor of the slot is validated, else let it be unvalidated
+  (if (some (lambda (slot) (c2cl:subclassp (class-of slot) 'validated-slot-definition)) dslotds)
+      'validated-effective-slot-definition
+      (call-next-method)))
 
 (defmethod shared-initialize :around ((slot validated-direct-slot-definition) slot-names &rest initargs &key &allow-other-keys)
 
@@ -207,11 +223,15 @@ In the event the type isn't a simple type, assume it's a class with metaclass :c
 
   ;; Make sure we set the field to the one defined on the most-specific (left-most)
   ;; direct slot definiton inherited by this class.
-  (let ((effective-slot (call-next-method)))
+  (flet ((field-of-if-validated (direct-slot)
+           (when (c2mop:subclassp (class-of direct-slot) 'validated-slot-definition)
+             (field-of direct-slot))))
+    (let ((effective-slot (call-next-method)))
 
-    (setf (field-of effective-slot) (some #'field-of direct-slot-definitions))
+      (setf (field-of effective-slot) (some #'field-of-if-validated direct-slot-definitions))
 
-    effective-slot))
+
+      effective-slot)))
 
 
 ;;; Code to add classes to the protocol for list-based schemas sanity-clause.schema:load
