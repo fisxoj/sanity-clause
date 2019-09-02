@@ -4,6 +4,9 @@
 .. image:: https://coveralls.io/repos/github/fisxoj/sanity-clause/badge.svg?branch=master
    :target: https://coveralls.io/github/fisxoj/sanity-clause?branch=master
    :alt: Coveralls status badge
+.. image:: https://img.shields.io/badge/Contributor%20Covenant-v1.4%20adopted-ff69b4.svg
+   :alt: Contributor Covenant
+   :target: CODE_OF_CONDUCT.md
 
 
 :Source: `https://github.com/fisxoj/sanity-clause <https://github.com/fisxoj/sanity-clause>`_
