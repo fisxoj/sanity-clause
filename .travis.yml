@@ -18,19 +18,19 @@ env:
     - LISP=sbcl-bin COVERALLS=true
     - LISP=ccl-bin
     - LISP=ecl
-    - LISP=allegro
+    # - LISP=allegro
     - LISP=abcl
 
 matrix:
   allow_failures:
     - env: LISP=clisp
     - env: LISP=abcl
+    - env: LISP=ecl
 
 install:
   # Install Roswell
   - curl -L https://raw.githubusercontent.com/snmsts/roswell/release/scripts/install-for-ci.sh | sh
   - ros install fukamachi/rove
-  - ros install fisxoj/validate
 
 cache:
   directories:

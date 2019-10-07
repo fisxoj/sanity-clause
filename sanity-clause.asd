@@ -7,9 +7,9 @@
                "cl-arrows"
                "cl-ppcre"
                "closer-mop"
+               "local-time"
 	       "str"
 	       "trivial-types"
-	       "validate"
 	       "parse-float"
                "quri")
   :pathname "src"
