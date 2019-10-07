@@ -214,7 +214,7 @@ E.g. (let ((string-field (make-field 'string))
     (defclass weasel-count ()
       ((count :initarg :count
               :type integer
-              :validate (lambda (v) (v:int v :min 0))))
+              :validate (lambda (v) (sanity-clause.validator:int v :min 0))))
       (:metaclass sanity-clause.schema:validated-metaclass))
 
     (let ((dumb-field (sanity-clause.field:make-field :one-schema-of :schema-choices '(pizza weasel-count))))
