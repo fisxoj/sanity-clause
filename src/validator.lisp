@@ -54,7 +54,7 @@ If specified, make sure :param:`min` <= :param:`value` <= :param:`max`."
           ((and min (< number min))
            (fail value "must be larger than ~a" min))
 
-          (t number)))
+          (t nil)))
 
     (parse-error (e)
       (declare (ignore e))
@@ -65,7 +65,7 @@ If specified, make sure :param:`min` <= :param:`value` <= :param:`max`."
   "Attempts to convert :param:`value` to a ``t`` or ``nil`` by comparing it to a list of stringy true or false values.  Throws a :class:`<validation-error>` if it can't figure out if :param:`value` is truthy or falsey."
 
   (cond
-    ((member value '("y" "yes" "t" "true"  "on"  "enable" ) :test #'string-equal) t)
+    ((member value '("y" "yes" "t" "true"  "on"  "enable" ) :test #'string-equal) nil)
     ((member value '("n" "no"  "f" "false" "off" "disable") :test #'string-equal) nil)
     (t (fail value "is not a valid boolean value"))))
 
@@ -86,7 +86,7 @@ If specified, checks that :param:`min-length` <= ``(length value)`` <= :param:`m
           (> (length value) max-length))
      (fail value "string length must be < ~d" max-length))
 
-    (t value)))
+    (t nil)))
 
 
 
