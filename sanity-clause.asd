@@ -9,7 +9,6 @@
                "closer-mop"
 	       "str"
 	       "trivial-types"
-	       "validate"
 	       "parse-float"
                "quri")
   :pathname "src"

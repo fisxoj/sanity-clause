@@ -30,7 +30,6 @@ install:
   # Install Roswell
   - curl -L https://raw.githubusercontent.com/snmsts/roswell/release/scripts/install-for-ci.sh | sh
   - ros install fukamachi/rove
-  - ros install fisxoj/validate
 
 cache:
   directories:
