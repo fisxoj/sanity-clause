@@ -419,7 +419,7 @@ Also contains :function:`sanity-clause.protocol:get-value`, :function:`sanity-cl
        (mapcar (lambda (item) (sanity-clause.protocol:load element-type item)) value)))))
 
 
-(defclass map-field (field)
+(define-final-class map-field (field)
   ((key-field :initarg :key-field
               :accessor key-field-of
               :initform :string)
@@ -445,7 +445,7 @@ examples::
     accumulator))
 
 
-(defclass one-field-of-field (field)
+(define-final-class one-field-of-field (field)
   ((field-choices :type list
                   :initarg :field-choices
                   :accessor field-choices-of
@@ -496,7 +496,7 @@ examples::
                         :parents (reverse (list* field parents))))))))
 
 
-(defclass one-schema-of-field (field)
+(define-final-class one-schema-of-field (field)
   ((schema-choices :type list
                    :initarg :schema-choices
                    :accessor schema-choices-of
