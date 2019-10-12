@@ -52,7 +52,54 @@
 
       (ok (signals (sanity-clause.protocol:load plist-schema '(:name "Matt"))
               'required-value-error)
-          "A missing, required value raises a required value error."))))
+          "A missing, required value raises a required value error.")))
+
+  (testing "alists"
+    (let ((schema (list :name (make-field 'string)
+                        :age  (make-field 'integer :required t))))
+
+      (ok (sanity-clause.protocol:load schema '((:name . "Matt") (:age . 30)))
+	  "Can load from valid data.")
+
+      (ok (sanity-clause.protocol:load schema '((:name . "Matt") (:age . "30")))
+	  "Can load valid data, converting from a string, if necessary.")
+
+      (ok (signals (sanity-clause.protocol:load schema '((:name . "Matt") (:age .  "potato")))
+              'conversion-error)
+          "A string that isn't an int raises a conversion error.")
+
+      (ok (signals (sanity-clause.protocol:load schema '((:name . 11) (:age . 30)))
+              'conversion-error)
+          "An integer that is not a string raises a validation error.")
+
+      (ok (signals (sanity-clause.protocol:load schema '((:name . "Matt")))
+              'required-value-error)
+          "A missing, required value raises a required value error.")))
+
+  (testing "hash-tables"
+    (flet ((make-test-hash (alist)
+             (alexandria:alist-hash-table alist :test 'equal)))
+
+      (let ((schema (list :name (make-field 'string)
+                          :age  (make-field 'integer :required t))))
+
+        (ok (sanity-clause.protocol:load schema (make-test-hash '((:name . "Matt") (:age . 30))))
+            "Can load from valid data.")
+
+        (ok (sanity-clause.protocol:load schema (make-test-hash '((:name . "Matt") (:age . "30"))))
+            "Can load valid data, converting from a string, if necessary.")
+
+        (ok (signals (sanity-clause.protocol:load schema (make-test-hash '((:name . "Matt") (:age .  "potato"))))
+                'conversion-error)
+            "A string that isn't an int raises a conversion error.")
+
+        (ok (signals (sanity-clause.protocol:load schema (make-test-hash '((:name . 11) (:age . 30))))
+                'conversion-error)
+            "An integer that is not a string raises a validation error.")
+
+        (ok (signals (sanity-clause.protocol:load schema (make-test-hash '((:name . "Matt"))))
+                'required-value-error)
+            "A missing, required value raises a required value error.")))))
 
 
 (deftest test-examples

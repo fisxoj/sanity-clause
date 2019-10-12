@@ -225,10 +225,9 @@ In the event the type isn't a simple type, assume it's a class with metaclass :c
 
 
 (defun collect-initargs-from-list (class data)
-  "Converts an input list from form ``([data-key] [value] ...)`` or ``(([data-key] . [value]) ...)`` to ``([initarg] [value] ...)`` so it is suitable for passing to :function:`make-instance`."
+  "Converts input data that is an alist, plist, object, or hash-table to ``([initarg] [value] ...)`` so it is suitable for passing to :function:`make-instance`.  Note that, while it tries to be very lenient about case and symbol/string comparison, implementation details (like the test function for a hash table) will affect the behavior of this function."
 
-  (declare (type validated-metaclass class)
-           (type (or trivial-types:property-list trivial-types:association-list) data))
+  (declare (type validated-metaclass class))
 
   (c2mop:ensure-finalized class)
 
