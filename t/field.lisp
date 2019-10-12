@@ -229,7 +229,7 @@ E.g. (let ((string-field (make-field 'string))
 
 
 (deftest test-one-field-of-field
-  (testing "a one-of-field defined with field classes"
+  (testing "a one-of-field defined with :field-choices class syntax"
     (let* ((string-field (make-field :string :validator 'sanity-clause.validator:not-empty))
            (integer-field (make-field :integer))
            (field (sanity-clause:make-field :one-field-of :data-key :data :field-choices (list string-field integer-field))))
@@ -243,7 +243,7 @@ E.g. (let ((string-field (make-field 'string))
       (ok (signals (sanity-clause.protocol:resolve field (list :data (local-time:now))) 'sanity-clause.field:conversion-error)
           "signals an error for a datetime.")))
 
-  (testing "a one-of-field defined with keyword syntax"
+  (testing "a one-of-field defined with :field-choices keyword syntax"
     (let ((field (sanity-clause:make-field :one-field-of :data-key :data :field-choices '((:string :validator (:not-empty)) :integer))))
 
       (ok (typep (sanity-clause.protocol:resolve field '(:data "hello")) 'string)
