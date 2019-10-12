@@ -439,8 +439,8 @@ examples::
   (let (accumulator)
     (with-slots (key-field value-field) field
       (sanity-clause.util:do-key-values (k v) data
-        (push (cons (resolve key-field k (list* key-field parents))
-                    (resolve value-field v (list* value-field parents)))
+        (push (cons (sanity-clause.protocol:resolve key-field k (list* key-field parents))
+                    (sanity-clause.protocol:resolve value-field v (list* value-field parents)))
               accumulator)))
     accumulator))
 
