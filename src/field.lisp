@@ -515,7 +515,11 @@ examples::
                    :accessor schema-choices-of
                    :documentation "Fields that this field could decode to."
                    :initform (error ":schema-choices is required in one-schema-of-field.")))
-  (:documentation "A field type that allows any of the schemas specified."))
+  (:documentation "A field type that allows any of the schemas specified.
+
+Use the ``:schema-choices`` initarg to provide a list of schema classes to try.
+
+**Note**: If your schema choices are very lenient (ie. every field is not required), this field will likely behave in unexpected ways.  That is, if you specify a list of classes that only have optional fields, sanity clause won't be able to figure out which one to use and will probably return the missing value instead of valid data.  You probably want at least one charactersitic field to be required."))
 
 
 (defmethod initialize-instance :after ((field one-schema-of-field) &key)
