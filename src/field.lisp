@@ -51,7 +51,7 @@ Also contains :function:`sanity-clause.protocol:get-value`, :function:`sanity-cl
 
 
 (deftype missing ()
-  :missing)
+  '(eql :missing))
 
 
 (defclass field ()
@@ -86,6 +86,11 @@ Also contains :function:`sanity-clause.protocol:get-value`, :function:`sanity-cl
 	     :documentation "Is this field required?  Cause the field to fail validation if it's not filled."))
   (:documentation "A base class for all fields that controls how they are (de?)serialized."))
 
+
+(defmethod print-object ((object field) stream)
+  (print-unreadable-object (object stream :type t :identity t)
+    (format stream "~@[data-key: ~a~]" (data-key-of object))))
+
 ;;; The most generic forms of these methods are defined here
 (defun all-validators (field)
   "Returns a generator function that yields a validator function each call."
@@ -109,13 +114,15 @@ Also contains :function:`sanity-clause.protocol:get-value`, :function:`sanity-cl
 (defmethod sanity-clause.protocol:resolve ((field field) data &optional parents)
   (declare (ignore parents))
 
-  (let ((value (->> data
-                    (sanity-clause.protocol:get-value field)
-                    (sanity-clause.protocol:deserialize field))))
+  (let ((value (sanity-clause.protocol:get-value field data)))
 
-    (sanity-clause.protocol:validate field value)
+    (if (eq value :missing)
+        value
+        (let ((deserialized-value (sanity-clause.protocol:deserialize field value)))
 
-    (values value)))
+          (sanity-clause.protocol:validate field deserialized-value)
+
+          (values deserialized-value)))))
 
 
 (defmethod sanity-clause.protocol:deserialize :around ((field field) value)
@@ -409,11 +416,16 @@ Also contains :function:`sanity-clause.protocol:get-value`, :function:`sanity-cl
 
 
 (defmethod sanity-clause.protocol:deserialize ((field nested-field) value)
-  (sanity-clause.protocol:load (element-type-of field) value))
+  (if (eq value :missing)
+      value
+      (sanity-clause.protocol:load (element-type-of field) value)))
 
 
 (defmethod sanity-clause.protocol:deserialize ((field list-field) value)
   (etypecase value
+    (missing
+     value)
+
     (trivial-types:proper-list
      (with-slots (element-type) field
        (mapcar (lambda (item) (sanity-clause.protocol:load element-type item)) value)))))
@@ -439,8 +451,8 @@ examples::
   (let (accumulator)
     (with-slots (key-field value-field) field
       (sanity-clause.util:do-key-values (k v) data
-        (push (cons (resolve key-field k (list* key-field parents))
-                    (resolve value-field v (list* value-field parents)))
+        (push (cons (sanity-clause.protocol:resolve key-field k (list* key-field parents))
+                    (sanity-clause.protocol:resolve value-field v (list* value-field parents)))
               accumulator)))
     accumulator))
 
@@ -460,6 +472,7 @@ examples::
              (etypecase field-args-or-field
                ((or symbol cons)
                 (apply #'make-field (make-args field-args-or-field)))
+
                (field
                 ;; The sub-field needs the same data-key as the parent to get the data
                 ;; might as well set attribute, too
@@ -502,7 +515,11 @@ examples::
                    :accessor schema-choices-of
                    :documentation "Fields that this field could decode to."
                    :initform (error ":schema-choices is required in one-schema-of-field.")))
-  (:documentation "A field type that allows any of the schemas specified."))
+  (:documentation "A field type that allows any of the schemas specified.
+
+Use the ``:schema-choices`` initarg to provide a list of schema classes to try.
+
+**Note**: If your schema choices are very lenient (ie. every field is not required), this field will likely behave in unexpected ways.  That is, if you specify a list of classes that only have optional fields, sanity clause won't be able to figure out which one to use and will probably return the missing value instead of valid data.  You probably want at least one charactersitic field to be required."))
 
 
 (defmethod initialize-instance :after ((field one-schema-of-field) &key)

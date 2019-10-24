@@ -203,33 +203,141 @@ E.g. (let ((string-field (make-field 'string))
 	  "raises validation errors for something that looks like a uuid, but has forbidden 'G's in it."))))
 
 
+(deftest test-missing-values
+  (defclass t-m-v-pizza ()
+    ((type :field-type :member
+           :initarg :type
+           :members (:pepperoni :hawaiian :plain)
+           :required t)
+     (size :field-type :member
+           :initarg :size
+           :members (:small :medium :large))
+     (rating :field-type :integer
+             :initarg :rating
+             :validator (lambda (rating) (sanity-clause.validator:int rating :min 0 :max 5))))
+    (:metaclass sanity-clause:validated-metaclass))
+
+  (ok (signals (make-instance 't-m-v-pizza
+                              :size :small)
+          'required-value-error)
+      "A required field signals an error when it's not supplied.")
+
+
+  (ok (eq (slot-value (make-instance 't-m-v-pizza :type :plain) 'rating) :missing)
+      "The :missing sentinel gets used for non-required field"))
+
+
+(deftest test-nested-field
+  (defclass cat ()
+    ((name :type string
+           :initarg :name)
+     (age :type integer
+          :initarg :age))
+    (:metaclass sanity-clause:validated-metaclass))
+
+  (defclass human ()
+    ((name :type string
+           :initarg :name)
+     (cat-friend :field-type :nested
+                 :element-type cat
+                 :initarg :cat-friend))
+    (:metaclass sanity-clause:validated-metaclass))
+
+
+  (defclass human-with-cat-list ()
+    ((name :type string
+           :initarg :name)
+     (cat-friends :field-type :list
+                  :element-type cat
+                  :initarg :cat-friends))
+    (:metaclass sanity-clause:validated-metaclass))
+
+  (testing "simple nesting"
+
+    (let ((data-with-cat '(:name "Matt" :cat-friend (:name "Tara" :age 10)))
+          (data-without-cat '(:name "Matt")))
+
+
+      (ok (typep (slot-value (sanity-clause:load 'human data-with-cat) 'cat-friend) 'cat)
+          "deserializes a cat class also, when data exists.")
+
+      (ok (eq (slot-value (sanity-clause:load 'human data-without-cat) 'cat-friend) :missing)
+          "deserializes the default missing value, when data is missing.")))
+
+  (testing "list nesting"
+    (let ((data-with-cats '(:name "Matt" :cat-friends ((:name "Tara" :age 10) (:name "Tiger" :age 4))))
+          (data-without-cats-field '(:name "Matt"))
+          (data-with-zero-cats '(:name "Matt" :cat-friends ())))
+
+
+      (ok (= (length (slot-value (sanity-clause:load 'human-with-cat-list data-with-cats) 'cat-friends)) 2)
+          "deserializes a list of cat classes, when data exists.")
+
+      (ok (zerop (length (slot-value (sanity-clause:load 'human-with-cat-list data-with-zero-cats) 'cat-friends)))
+          "deserializes a list of zero cat classes, when fields exists but is empty.")
+
+      (ok (eq (slot-value (sanity-clause:load 'human-with-cat-list data-without-cats-field) 'cat-friends) :missing)
+          "deserializes the default missing value, when data is missing."))))
+
+
 (deftest test-one-schema-of-field
   (testing "A one-schema-of-field with two options"
 
-    (defclass pizza ()
+    (defclass tosof-pizza ()
       ((name :initarg :name
-             :type string))
+             :type string
+             :required t))
       (:metaclass sanity-clause.schema:validated-metaclass))
 
-    (defclass weasel-count ()
+    (defclass tosof-weasel-count ()
       ((count :initarg :count
               :type integer
-              :validate (lambda (v) (sanity-clause.validator:int v :min 0))))
+              :validate (lambda (v) (sanity-clause.validator:int v :min 0))
+              :required t))
       (:metaclass sanity-clause.schema:validated-metaclass))
 
-    (let ((dumb-field (sanity-clause.field:make-field :one-schema-of :schema-choices '(pizza weasel-count))))
-      (ok (typep (sanity-clause.protocol:resolve dumb-field '(:name "pepperoni")) 'pizza)
+    (let ((dumb-field (sanity-clause.field:make-field :one-schema-of :schema-choices '(tosof-pizza tosof-weasel-count) :required t)))
+      (ok (typep (sanity-clause.protocol:resolve dumb-field '(:name "pepperoni")) 'tosof-pizza)
           "decodes the first option.")
 
-      (ok (typep (sanity-clause.protocol:resolve dumb-field '(:count "112")) 'weasel-count)
+      (ok (typep (sanity-clause.protocol:resolve dumb-field '(:count "112")) 'tosof-weasel-count)
           "decodes the second option.")
 
       (ok (signals (sanity-clause.protocol:resolve dumb-field '(:armadillo :arnie)) 'sanity-clause.field:conversion-error)
-          "signals an error if it can't decode either option."))))
+          "signals an error if it can't decode either option.")))
+
+  (testing "a descriminated union based on a 'version' field)"
+    (defclass tosof-v1 ()
+      ((version :field-type :constant
+                :initarg :version
+                :constant "1"
+                :required t))
+      (:metaclass sanity-clause:validated-metaclass))
+
+    (defclass tosof-v2 ()
+      ((version :field-type :constant
+                :initarg :version
+                :constant "2"
+                :required t))
+      (:metaclass sanity-clause:validated-metaclass))
+
+    (defclass tosof-v3 ()
+      ((version :field-type :constant
+                :initarg :version
+                :constant "3"
+                :required t))
+      (:metaclass sanity-clause:validated-metaclass))
+
+    (let ((union-type-field (make-field :one-schema-of :schema-choices '(tosof-v1 tosof-v2 tosof-v3))))
+      (ok (every 'eq
+                 '(tosof-v3 tosof-v1 tosof-v2)
+                 (mapcar (lambda (data) (class-name (class-of (sanity-clause:resolve union-type-field data))))
+                         '((:version "3") (:version "1") (:version "2"))))
+          "decodes to the correct version of the class."))))
 
 
 (deftest test-one-field-of-field
-  (testing "a one-of-field defined with field classes"
+  (testing "a one-of-field defined with :field-choices class syntax"
     (let* ((string-field (make-field :string :validator 'sanity-clause.validator:not-empty))
            (integer-field (make-field :integer))
            (field (sanity-clause:make-field :one-field-of :data-key :data :field-choices (list string-field integer-field))))
@@ -243,7 +351,7 @@ E.g. (let ((string-field (make-field 'string))
       (ok (signals (sanity-clause.protocol:resolve field (list :data (local-time:now))) 'sanity-clause.field:conversion-error)
           "signals an error for a datetime.")))
 
-  (testing "a one-of-field defined with keyword syntax"
+  (testing "a one-of-field defined with :field-choices keyword syntax"
     (let ((field (sanity-clause:make-field :one-field-of :data-key :data :field-choices '((:string :validator (:not-empty)) :integer))))
 
       (ok (typep (sanity-clause.protocol:resolve field '(:data "hello")) 'string)

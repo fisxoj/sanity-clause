@@ -55,6 +55,9 @@
 </tbody>
 </table>
 <p>A field type that allows any of the schemas specified.</p>
+<p>Use the <tt class="docutils literal">
+<span class="pre">:schema-choices</span></tt> initarg to provide a list of schema classes to try.</p>
+<p><strong><span>Note</span></strong>: If your schema choices are very lenient (ie. every field is not required), this field will likely behave in unexpected ways.  That is, if you specify a list of classes that only have optional fields, sanity clause won't be able to figure out which one to use and will probably return the missing value instead of valid data.  You probably want at least one charactersitic field to be required.</p>
 <a id="class-one-field-of-field" class="target" name="class-one-field-of-field"></a></div>
 <div id="one-field-of-field" class="section"><h3><a name="one-field-of-field"><tt class="docutils literal">
 <span class="pre">one-field-of-field</span></tt></a></h3>
@@ -95,19 +98,6 @@
 </tbody>
 </table>
 <p>An error that signals a required value is missing.</p>
-<a id="condition-conversion-error" class="target" name="condition-conversion-error"></a></div>
-<div id="conversion-error" class="section"><h3><a name="conversion-error"><tt class="docutils literal">
-<span class="pre">conversion-error</span></tt></a></h3>
-<table class="field-list" frame="void" rules="none"><col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field"><th colspan="1" class="field-name">Superclasses:</th><td class="field-body"><tt class="docutils literal">
-<span class="pre">(FIELD-ERROR</span> <span class="pre">VALUE-ERROR)</span></tt></td>
-</tr>
-</tbody>
-</table>
-<p>An error that signals something went wrong while calling <tt class="docutils literal">
-<span class="pre">converter</span></tt> for a field.</p>
 <a id="condition-validation-error" class="target" name="condition-validation-error"></a></div>
 <div id="validation-error" class="section"><h3><a name="validation-error"><tt class="docutils literal">
 <span class="pre">validation-error</span></tt></a></h3>
@@ -246,7 +236,7 @@
 <p>A base class for all fields that controls how they are (de?)serialized.</p>
 </div>
 </div>
-<hr class ="docutils footer" /><div class="footer">Generated on : Sat, 10 Aug 2019 19:19:54 .
+<hr class ="docutils footer" /><div class="footer">Generated on : Thu, 24 Oct 2019 17:05:33 .
 </div>
 </div>
 </body>

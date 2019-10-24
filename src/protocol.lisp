@@ -11,6 +11,7 @@
   (:documentation "The methods that govern behavior in sanity-clause.
 
 The methods relating to fields are:
+
 * :function:`resolve`
 * :function:`deserialize`
 * :function:`serialize`
@@ -18,6 +19,7 @@ The methods relating to fields are:
 * :function:`get-value`
 
 The methods relating to schemas are:
+
 * :function:`load`
 * :function:`dump`"))
 

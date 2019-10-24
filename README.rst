@@ -14,12 +14,12 @@
 
 ..
 
-  There's no such thing as Sanity Clause.
+  You can't fool me. There ain't no santy clause!
 
-  -- Groucho Marx
+  -- Chico Marx
 
 
-Sanity clause is a data validation/contract library.  You might use it for configuration data, validating an api response, or documents from a datastore.  In a dynamically typed langauge, it helps you define clearly defined areas of doubt and uncertainty.  We should love our users, but we should never blindly trust their inputs.
+Sanity clause is a data validation/contract library.  You might use it for configuration data, validating an api response, or documents from a datastore.  In a dynamically typed language, it helps you define clearly defined areas of doubt and uncertainty.  We should love our users, but we should never blindly trust their inputs.
 
 To make use of it, you define schemas, which can be property lists with symbols for keys and instances of :class:`sanity-clause.field:field` subclasses that dictate the type of values you expect as well as the shape of the property list to be returned after deserializing and validating data.  For example::
 
@@ -32,7 +32,7 @@ You can load these sorts of schemas from a file by writing them as sexps with ke
   (:key (:string :validator (:not-empty) :default "potato")
    :key2 (:integer :validator ((:int :min 0)) :default 2))
 
-and then loading them using :function:`sanity-clause.loadable-schema:load` to load them.
+and then loading them using :function:`sanity-clause.loadable-schema:load-schema` to load them.
 
 
 Finally, you can also define class-based schemas using :class:`sanity-clause:validated-metaclass` like::
@@ -51,7 +51,7 @@ Finally, you can also define class-based schemas using :class:`sanity-clause:val
                  :required t))
         (:metaclass sanity-clause:validated-metaclass))
 
-which will validate thier initargs when you instantiate them (**BUT NOT WHEN YOU SET SLOTS**).  Hopefully, that will be added eventually, perhaps as an optional feature.
+which will validate their initargs when you instantiate them (**BUT NOT WHEN YOU SET SLOTS**).  Hopefully, that will be added eventually, perhaps as an optional feature.
 
 
 ~~~~~~~

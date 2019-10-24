@@ -41,7 +41,11 @@
 
 	 (let* ((assoc-cons (assoc key object :test #'string-equal))
 		(value (or (cdr assoc-cons) default)))
-	   (values value (not (null assoc-cons))))))))
+	   (values value (not (null assoc-cons)))))
+
+        (hash-table
+
+         (gethash key object default)))))
 
 
 (defmacro do-key-values ((key value) data &body body)
