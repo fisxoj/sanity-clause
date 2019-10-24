@@ -20,6 +20,7 @@
                (:file "loadable-schema")
                (:file "schema")
 	       (:file "sanity-clause"))
+  :description "Sanity clause is a data contract and validation library."
   :long-description #.(uiop:read-file-string #P"README.rst")
   :in-order-to ((test-op (test-op sanity-clause/test))))
 
