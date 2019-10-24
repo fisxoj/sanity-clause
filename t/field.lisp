@@ -238,8 +238,7 @@ E.g. (let ((string-field (make-field 'string))
   (defclass human ()
     ((name :type string
            :initarg :name)
-     (cat-friend :type cat
-                 :field-type :nested
+     (cat-friend :field-type :nested
                  :element-type cat
                  :initarg :cat-friend))
     (:metaclass sanity-clause:validated-metaclass))
@@ -248,8 +247,7 @@ E.g. (let ((string-field (make-field 'string))
   (defclass human-with-cat-list ()
     ((name :type string
            :initarg :name)
-     (cat-friends :type cat
-                  :field-type :list
+     (cat-friends :field-type :list
                   :element-type cat
                   :initarg :cat-friends))
     (:metaclass sanity-clause:validated-metaclass))
