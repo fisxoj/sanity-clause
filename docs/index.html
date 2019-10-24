@@ -7,11 +7,11 @@
 <meta name="Author" content="Matt Novenstern" />
 </head>
 <body>
-<div id="id1" class="document"><h1 class="title">sanity-clause</h1>
+<div id="sanity-clause" class="document"><h1 class="title">sanity-clause</h1>
 <table class="docinfo" frame="void" rules="none"><col class="docinfo-name" />
 <col class="docinfo-content" />
 <tbody valign="top">
-<tr><th class="docinfo-name">Author</th><td>Matt Novenstern</td></tr><tr><th class="docinfo-name">Version</th><td>0.5.0</td></tr><tr class="field"><th colspan="1" class="docinfo-name">license:</th><td class="field-body">LLGPLv3+</td>
+<tr><th class="docinfo-name">Author</th><td>Matt Novenstern</td></tr><tr><th class="docinfo-name">Version</th><td>0.6.0</td></tr><tr class="field"><th colspan="1" class="docinfo-name">license:</th><td class="field-body">LLGPLv3+</td>
 </tr>
 <tr class="field"><th colspan="1" class="docinfo-name">homepage:</th><td class="field-body"><a class="reference" href="https://fisxoj.github.io/sanity-clause/"><span>https://fisxoj.github.io/sanity-clause/</span></a></td>
 </tr>
@@ -19,6 +19,7 @@
 </table>
 <div class="image image-reference"><a class="reference" href="https://travis-ci.org/fisxoj/sanity-clause"><span><img src="https://travis-ci.org/fisxoj/sanity-clause.svg?branch=master" alt="Travis CI status badge" /></span></a></div>
 <div class="image image-reference"><a class="reference" href="https://coveralls.io/github/fisxoj/sanity-clause?branch=master"><span><img src="https://coveralls.io/repos/github/fisxoj/sanity-clause/badge.svg?branch=master" alt="Coveralls status badge" /></span></a></div>
+<div class="image image-reference"><a class="reference" href="CODE_OF_CONDUCT.md"><span><img src="https://img.shields.io/badge/Contributor%20Covenant-v1.4%20adopted-ff69b4.svg" alt="Contributor Covenant" /></span></a></div>
 <table class="field-list" frame="void" rules="none"><col class="field-name" />
 <col class="field-body" />
 <tbody valign="top">
@@ -29,9 +30,9 @@
 </tbody>
 </table>
 <!--  -->
-<blockquote> <p>There's no such thing as Sanity Clause.</p>
-<p class="attribution">&mdash; Groucho Marx  </p>
-</blockquote> <p>Sanity clause is a data validation/contract library.  You might use it for configuration data, validating an api response, or documents from a datastore.  In a dynamically typed langauge, it helps you define clearly defined areas of doubt and uncertainty.  We should love our users, but we should never blindly trust their inputs.</p>
+<blockquote> <p>You can't fool me. There ain't no santy clause!</p>
+<p class="attribution">&mdash; Chico Marx  </p>
+</blockquote> <p>Sanity clause is a data validation/contract library.  You might use it for configuration data, validating an api response, or documents from a datastore.  In a dynamically typed language, it helps you define clearly defined areas of doubt and uncertainty.  We should love our users, but we should never blindly trust their inputs.</p>
 <p>To make use of it, you define schemas, which can be property lists with symbols for keys and instances of <a class="reference ref-class" href="sanity-clause.field.html#class__field"><span class="ref-class">sanity-clause.field:field</span></a> subclasses that dictate the type of values you expect as well as the shape of the property list to be returned after deserializing and validating data.  For example:</p>
 <pre class="literal-block">
 (list :name (make-field :string) :age (make-field :integer))
@@ -41,7 +42,7 @@ schema.sexp
 
 (:key (:string :validator (:not-empty) :default "potato")
  :key2 (:integer :validator ((:int :min 0)) :default 2))
-</pre><p>and then loading them using <a class="reference ref-function" href="http://www.lispworks.com/reference/HyperSpec/Body/f_load.htm"><span class="ref-function">common-lisp:load</span></a> to load them.</p>
+</pre><p>and then loading them using <a class="reference ref-function" href="sanity-clause.loadable-schema.html#function__load-schema"><span class="ref-function">sanity-clause.loadable-schema:load-schema</span></a> to load them.</p>
 <p>Finally, you can also define class-based schemas using <a class="reference ref-class" href="sanity-clause.schema.html#class__validated-metaclass"><span class="ref-class">sanity-clause.schema:validated-metaclass</span></a> like:</p>
 <pre class="literal-block">
 (defclass person ()
@@ -57,7 +58,7 @@ schema.sexp
               :initarg :potato
               :required t))
      (:metaclass sanity-clause:validated-metaclass))
-</pre><p>which will validate thier initargs when you instantiate them (<strong><span>BUT NOT WHEN YOU SET SLOTS</span></strong>).  Hopefully, that will be added eventually, perhaps as an optional feature.</p>
+</pre><p>which will validate their initargs when you instantiate them (<strong><span>BUT NOT WHEN YOU SET SLOTS</span></strong>).  Hopefully, that will be added eventually, perhaps as an optional feature.</p>
 <div id="example" class="section"><h2><a name="example">Example</a></h2>
 <p><tt class="docutils literal">
 <span class="pre">v2-info.json</span></tt>:</p>
@@ -155,8 +156,8 @@ schema.sexp
 ;; =&gt; "Apache 2.0"
 
 
-</pre><div class="section"><p class="sidebar-title first">Packages</p>
-<ul class="last">
+</pre><div id="packages" class="section"><h3><a name="packages">Packages</a></h3>
+<ul>
 <li><p class="first last"><a class="reference" href="sanity-clause.util.html"><span>sanity-clause.util</span></a></p>
 </li>
 <li><p class="first last"><a class="reference" href="sanity-clause.validator.html"><span>sanity-clause.validator</span></a></p>
@@ -165,16 +166,10 @@ schema.sexp
 </li>
 <li><p class="first last"><a class="reference" href="sanity-clause.field.html"><span>sanity-clause.field</span></a></p>
 </li>
-<li><p class="first last"><a class="reference" href="sanity-clause.loadable-schema.html"><span>sanity-clause.loadable-schema</span></a></p>
-</li>
-<li><p class="first last"><a class="reference" href="sanity-clause.schema.html"><span>sanity-clause.schema</span></a></p>
-</li>
-<li><p class="first last"><a class="reference" href="sanity-clause.html"><span>sanity-clause</span></a></p>
-</li>
 </ul>
 </div>
 </div>
-<hr class ="docutils footer" /><div class="footer">Generated on : Sat, 10 Aug 2019 19:19:54 .
+<hr class ="docutils footer" /><div class="footer">Generated on : Thu, 24 Oct 2019 17:05:33 .
 </div>
 </div>
 </body>

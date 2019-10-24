@@ -36,13 +36,23 @@
 <span class="pre">str</span></tt></a></h3>
 <p><tt class="docutils literal">
 <span class="pre">(VALUE</span> <span class="pre">&amp;KEY</span> <span class="pre">MIN-LENGTH</span> <span class="pre">MAX-LENGTH)</span></tt></p>
-<p>Checks that the input is a string, optionally of a length between MIN-LENGTH and MAX-LENGTH.</p>
+<p>Checks that <tt class="docutils literal param">
+<span class="pre">value</span></tt> is a string. If specified, checks that <tt class="docutils literal param">
+<span class="pre">min-length</span></tt> &lt;= <tt class="docutils literal">
+<span class="pre">(length</span> <span class="pre">value)</span></tt> &lt;= <tt class="docutils literal param">
+<span class="pre">max-length</span></tt>.</p>
 <a id="function-int" class="target" name="function-int"></a></div>
 <div id="int" class="section"><h3><a name="int"><tt class="docutils literal">
 <span class="pre">int</span></tt></a></h3>
 <p><tt class="docutils literal">
-<span class="pre">(VALUE</span> <span class="pre">&amp;KEY</span> <span class="pre">MAX</span> <span class="pre">MIN)</span></tt></p>
-<p>Checks that a number is an integer, optionally checking it's in the inclusive range [MIN, MAX].</p>
+<span class="pre">(VALUE</span> <span class="pre">&amp;KEY</span> <span class="pre">(RADIX</span> <span class="pre">10)</span> <span class="pre">MAX</span> <span class="pre">MIN)</span></tt></p>
+<p>Accepts a <tt class="docutils literal param">
+<span class="pre">value</span></tt> as an integer or string. If <tt class="docutils literal param">
+<span class="pre">value</span></tt> is a string, interpret it as a value with base- <tt class="docutils literal param">
+<span class="pre">radix</span></tt>. If specified, make sure <tt class="docutils literal param">
+<span class="pre">min</span></tt> &lt;= <tt class="docutils literal param">
+<span class="pre">value</span></tt> &lt;= <tt class="docutils literal param">
+<span class="pre">max</span></tt>.</p>
 <a id="function-hydrate-validators" class="target" name="function-hydrate-validators"></a></div>
 <div id="hydrate-validators" class="section"><h3><a name="hydrate-validators"><tt class="docutils literal">
 <span class="pre">hydrate-validators</span></tt></a></h3>
@@ -57,7 +67,7 @@
 <p>Find a validator function by keyword-spec and return the function represented by the spec.</p>
 </div>
 </div>
-<hr class ="docutils footer" /><div class="footer">Generated on : Sat, 10 Aug 2019 19:19:54 .
+<hr class ="docutils footer" /><div class="footer">Generated on : Thu, 24 Oct 2019 17:05:33 .
 </div>
 </div>
 </body>
