@@ -152,14 +152,8 @@ In the event the type isn't a simple type, assume it's a class with metaclass :c
                    ;; Don't bother trying to load something we don't have a data-key for
                    (sanity-clause.field:data-key-of field))
 
-          (let ((value (->>
-                        (sanity-clause.util:get-value data-source initarg (sanity-clause.field::default-of (field-of slot)))
-                        (sanity-clause.protocol:deserialize field))))
-
-            (sanity-clause.protocol:validate field value)
-
-            (appendf validated-initargs
-                     (list initarg value))))))
+          (appendf validated-initargs
+                   (list initarg (sanity-clause:resolve (field-of slot) data-source))))))
 
     (apply #'call-next-method class validated-initargs)))
 

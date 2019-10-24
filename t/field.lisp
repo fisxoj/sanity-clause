@@ -203,6 +203,85 @@ E.g. (let ((string-field (make-field 'string))
 	  "raises validation errors for something that looks like a uuid, but has forbidden 'G's in it."))))
 
 
+(deftest test-missing-values
+  (defclass pizza ()
+    ((type :field-type :member
+           :initarg :type
+           :members (:pepperoni :hawaiian :plain)
+           :required t)
+     (size :field-type :member
+           :initarg :size
+           :members (:small :medium :large))
+     (rating :field-type :integer
+             :initarg :rating
+             :validator (lambda (rating) (sanity-clause.validator:int rating :min 0 :max 5))))
+    (:metaclass sanity-clause:validated-metaclass))
+
+  (ok (signals (make-instance 'pizza
+                              :size :small)
+          'required-value-error)
+      "A required field signals an error when it's not supplied.")
+
+
+  (ok (eq (slot-value (make-instance 'pizza :type :plain) 'rating) :missing)
+      "The :missing sentinel gets used for non-required field"))
+
+
+(deftest test-nested-field
+  (defclass cat ()
+    ((name :type string
+           :initarg :name)
+     (age :type integer
+          :initarg :age))
+    (:metaclass sanity-clause:validated-metaclass))
+
+  (defclass human ()
+    ((name :type string
+           :initarg :name)
+     (cat-friend :type cat
+                 :field-type :nested
+                 :element-type cat
+                 :initarg :cat-friend))
+    (:metaclass sanity-clause:validated-metaclass))
+
+
+  (defclass human-with-cat-list ()
+    ((name :type string
+           :initarg :name)
+     (cat-friends :type cat
+                  :field-type :list
+                  :element-type cat
+                  :initarg :cat-friends))
+    (:metaclass sanity-clause:validated-metaclass))
+
+  (testing "simple nesting"
+
+    (let ((data-with-cat '(:name "Matt" :cat-friend (:name "Tara" :age 10)))
+          (data-without-cat '(:name "Matt")))
+
+
+      (ok (typep (slot-value (sanity-clause:load 'human data-with-cat) 'cat-friend) 'cat)
+          "deserializes a cat class also, when data exists.")
+
+      (ok (eq (slot-value (sanity-clause:load 'human data-without-cat) 'cat-friend) :missing)
+          "deserializes the default missing value, when data is missing.")))
+
+  (testing "list nesting"
+    (let ((data-with-cats '(:name "Matt" :cat-friends ((:name "Tara" :age 10) (:name "Tiger" :age 4))))
+          (data-without-cats-field '(:name "Matt"))
+          (data-with-zero-cats '(:name "Matt" :cat-friends ())))
+
+
+      (ok (= (length (slot-value (sanity-clause:load 'human-with-cat-list data-with-cats) 'cat-friends)) 2)
+          "deserializes a list of cat classes, when data exists.")
+
+      (ok (zerop (length (slot-value (sanity-clause:load 'human-with-cat-list data-with-zero-cats) 'cat-friends)))
+          "deserializes a list of zero cat classes, when fields exists but is empty.")
+
+      (ok (eq (slot-value (sanity-clause:load 'human-with-cat-list data-without-cats-field) 'cat-friends) :missing)
+          "deserializes the default missing value, when data is missing."))))
+
+
 (deftest test-one-schema-of-field
   (testing "A one-schema-of-field with two options"
 
