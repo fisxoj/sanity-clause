@@ -153,7 +153,7 @@ In the event the type isn't a simple type, assume it's a class with metaclass :c
                    (sanity-clause.field:data-key-of field))
 
           (appendf validated-initargs
-                   (list initarg (sanity-clause:resolve (field-of slot) data-source))))))
+                   (list initarg (sanity-clause.protocol:resolve (field-of slot) data-source))))))
 
     (apply #'call-next-method class validated-initargs)))
 
