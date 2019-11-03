@@ -216,18 +216,6 @@ In the event the type isn't a simple type, assume it's a class with metaclass :c
   (sanity-clause.protocol:get-value (field-of slot) object))
 
 
-(defun collect-initargs-from-list (class data)
-  "Converts input data that is an alist, plist, object, or hash-table to ``([initarg] [value] ...)`` so it is suitable for passing to :function:`make-instance`.  Note that, while it tries to be very lenient about case and symbol/string comparison, implementation details (like the test function for a hash table) will affect the behavior of this function."
-
-  (declare (type validated-metaclass class))
-
-  (c2mop:ensure-finalized class)
-
-  (loop for slot in (c2mop:class-slots class)
-        when (sanity-clause.field:load-field-p (field-of slot))
-          collecting (first (c2mop:slot-definition-initargs slot))
-        collecting (sanity-clause.protocol:get-value slot data)))
-
 ;;; Implementations of the load method for lists or metaclasses
 
 (defmethod sanity-clause.protocol:load ((schema list) data &optional format)
