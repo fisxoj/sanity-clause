@@ -150,8 +150,11 @@ In the event the type isn't a simple type, assume it's a class with metaclass :c
                    ;; Don't bother trying to load something we don't have a data-key for
                    (sanity-clause.field:data-key-of field))
 
-          (setf (c2mop:slot-value-using-class class instance slot)
-                (sanity-clause.protocol:resolve field data-source)))))
+          (let ((value (sanity-clause.protocol:resolve field data-source)))
+
+            (unless (eq value :missing)
+              (setf (c2mop:slot-value-using-class class instance slot)
+                    value))))))
 
     (values instance)))
 
