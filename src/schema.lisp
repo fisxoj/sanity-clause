@@ -257,7 +257,7 @@ In the event the type isn't a simple type, assume it's a class with metaclass :c
   (apply #'make-instance class (collect-initargs-from-list class data)))
 
 
-;;; Implementations of the dump method ofr lists or metaclasses
+;;; Implementations of the dump method for lists or metaclasses
 
 (defmethod sanity-clause.protocol:dump ((schema symbol) data &optional format)
   (sanity-clause.protocol:dump (find-class schema) data format))
