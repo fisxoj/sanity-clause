@@ -252,7 +252,7 @@ In the event the type isn't a simple type, assume it's a class with metaclass :c
 (defmethod sanity-clause.protocol:load ((class validated-metaclass) data &optional format)
   (declare (ignore format))
 
-  (funcall #'make-instance class 'data data))
+  (make-instance class 'data data))
 
 
 ;;; Implementations of the dump method for lists or metaclasses
