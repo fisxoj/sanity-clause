@@ -12,27 +12,22 @@
 	   #:make-field
 
 	   ;; Fields
-	   #:string-field
+	   #:constant-field
 	   #:email-field
-	   #:member-field
 	   #:integer-field
 	   #:real-field
-	   #:constant-field
+	   #:string-field
 	   #:timestamp-field
-           #:uri-field
-           #:boolean-field
 	   #:uuid-field
+           #:boolean-field
+           #:list-field
+           #:uri-field
 
            #:map-field
-           #:one-schema-of-field
+	   #:member-field
+           #:nested-field
            #:one-field-of-field
-
-           ;; Fields defined in nested-fields.lisp
-           ;; #:map-field
-           ;; #:list-field
-           ;; #:nested-field
-           ;; #:one-field-of-field
-           ;; #:one-schema-of-field
+           #:one-schema-of-field
 
 	   ;; Readers
 	   #:attribute-of
