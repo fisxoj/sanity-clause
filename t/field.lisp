@@ -217,13 +217,13 @@ E.g. (let ((string-field (make-field 'string))
              :validator (lambda (rating) (sanity-clause.validator:int rating :min 0 :max 5))))
     (:metaclass sanity-clause:validated-metaclass))
 
-  (ok (signals (make-instance 't-m-v-pizza
-                              :size :small)
+  (ok (signals (sanity-clause:load 't-m-v-pizza
+                                   '(:size :small))
           'required-value-error)
       "A required field signals an error when it's not supplied.")
 
 
-  (ok (eq (slot-value (make-instance 't-m-v-pizza :type :plain) 'rating) :missing)
+  (ok (eq (slot-value (sanity-clause:load 't-m-v-pizza '(:type :plain)) 'rating) :missing)
       "The :missing sentinel gets used for non-required field"))
 
 

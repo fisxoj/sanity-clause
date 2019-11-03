@@ -130,32 +130,30 @@ In the event the type isn't a simple type, assume it's a class with metaclass :c
   ())
 
 
-(defmethod make-instance :around ((class validated-metaclass) &rest initargs)
+(defmethod make-instance :around ((class validated-metaclass) &rest initargs &key ((data data)))
 
   (c2mop:ensure-finalized class)
 
-  (let ((validated-initargs nil)
+  (let (
         ;; There's one special case here to read values from environment variables if the &rest args
         ;; passed here are '(:source :env)
-        (data-source (if (and (= 2 (length initargs))
-                              (eq (first initargs) :source)
-                              (eq (second initargs) :env))
+        (data-source (if (equal '(:source :env) data)
                          :env
-                         initargs)))
+                         data))
+        (instance (apply #'call-next-method class (remove-from-plist initargs 'data :source))))
 
     (dolist (slot (c2mop:class-slots class))
 
-      (let* ((field (field-of slot))
-             (initarg (first (c2mop:slot-definition-initargs slot))))
+      (let ((field (field-of slot)))
 
         (when (and (sanity-clause.field:load-field-p field)
                    ;; Don't bother trying to load something we don't have a data-key for
                    (sanity-clause.field:data-key-of field))
 
-          (appendf validated-initargs
-                   (list initarg (sanity-clause.protocol:resolve (field-of slot) data-source))))))
+          (setf (c2mop:slot-value-using-class class instance slot)
+                (sanity-clause.protocol:resolve field data-source)))))
 
-    (apply #'call-next-method class validated-initargs)))
+    (values instance)))
 
 
 (defmethod c2mop:validate-superclass ((mc validated-metaclass) (c standard-object))
@@ -254,7 +252,7 @@ In the event the type isn't a simple type, assume it's a class with metaclass :c
 (defmethod sanity-clause.protocol:load ((class validated-metaclass) data &optional format)
   (declare (ignore format))
 
-  (apply #'make-instance class (collect-initargs-from-list class data)))
+  (funcall #'make-instance class 'data data))
 
 
 ;;; Implementations of the dump method for lists or metaclasses
