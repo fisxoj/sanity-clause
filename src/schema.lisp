@@ -11,21 +11,27 @@
         ((favorite-dog :type symbol
                        :field-type :member
                        :members (:wedge :walter)
-                       :initarg :favorite-dog
+                       :data-key \"favoriteDog\"
                        :required t)
          (age :type (integer 0)
-              :initarg :age
+              :data-key \"age\"
               :required t)
          (potato :type string
-                 :initarg :potato
+                 :data-key \"potato\"
                  :required t))
         (:metaclass validated-metaclass))
 
-The above defines a class that can be instantiated with :function:`make-instance`, but will error if the initargs don't satisfy the contract required by the field.
+The above defines a class that can be instantiated with :function:`sanity-clause.protocol:load, but will error if the initargs don't satisfy the contract required by the field.
+
+::
+
+    (sanity-clause:load 'person '((\"favoriteDog\" . \"wedge\")
+                                  (\"age\" . 10)
+                                  (\"potato\" . \"weasel\"))
 
 Some special types can be specifed with lisp type specs, like ``age`` above, which will generate an :class:`sanity-clause.field:integer-field`, with validations requiring the value be at least 0.
 
-**Nota Bene:** At the moment, there is no validation done on updating slots after instances are created."))
+**Nota Bene:** At the moment, there is no validation done on updating slots after instances are created and only instances created with :function:`sanity-clause.protocol:load` are checked.  Using :function:`make-instance` doesn't validate anything."))
 
 (in-package :sanity-clause.schema)
 
