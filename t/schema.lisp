@@ -217,7 +217,7 @@
         (:metaclass sanity-clause.schema:validated-metaclass))
       "can define the class.")
 
-  (ok (make-instance 'environment-sourced :source :env)
+  (ok (sanity-clause:load 'environment-sourced '(:source :env))
       "can load from the envrionment."))
 
 
@@ -238,7 +238,7 @@
             :initarg :pie))
       (:metaclass sanity-clause.schema:validated-metaclass))
 
-    (ok (signals (make-instance 'b :pie :apple) 'sanity-clause.field:conversion-error)
+    (ok (signals (sanity-clause:load 'b '(:pie :apple)) 'sanity-clause.field:conversion-error)
         "take the most specific definition of the field, raising an error for values that were valid for the old version.")
 
     (ok (make-instance 'b :pie "peach")
@@ -257,31 +257,33 @@
   (defclass pie-inventory ()
     ((pie :field-type :nested
           :element-type pie
+          :data-key :pie
           :initarg :pie)
      (quantity :type integer
-               :initarg :qty))
+               :data-key :qty))
     (:metaclass sanity-clause.schema:validated-metaclass))
 
   (defclass pie-list ()
     ((pies :type list
            :field-type :list
            :element-type pie
-           :initarg :pies))
+           :initarg :pies
+           :data-key :pies))
     (:metaclass sanity-clause.schema:validated-metaclass))
 
 
   (testing "pie inventory"
-    (let ((inventory (make-instance 'pie-inventory :pie '(:pie "peach") :qty 10)))
+    (let ((inventory (sanity-clause:load 'pie-inventory '(:pie (:pie "peach") :qty 10))))
 
       (ok (typep (slot-value inventory 'pie) 'pie)
           "Pie slot is an instance of pie class.")
 
       (ok (typep (slot-value inventory 'quantity) 'integer)
-          "Qunantity slot is an instance of integer.")))
+          "Quantity slot is an instance of integer.")))
 
 
   (testing "list of pies"
-    (let ((pie-list (make-instance 'pie-list :pies '((:pie "peach") (:pie "peach") (:pie "key-lime")))))
+    (let ((pie-list (sanity-clause:load 'pie-list '(:pies ((:pie "peach") (:pie "peach") (:pie "key-lime"))))))
 
       (ok pie-list
           "Can create a nested class with pies in it.")

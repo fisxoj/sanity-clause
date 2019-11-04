@@ -217,14 +217,14 @@ E.g. (let ((string-field (make-field 'string))
              :validator (lambda (rating) (sanity-clause.validator:int rating :min 0 :max 5))))
     (:metaclass sanity-clause:validated-metaclass))
 
-  (ok (signals (make-instance 't-m-v-pizza
-                              :size :small)
+  (ok (signals (sanity-clause:load 't-m-v-pizza
+                                   '(:size :small))
           'required-value-error)
-      "A required field signals an error when it's not supplied.")
+      "a required field signals an error when it's not supplied.")
 
 
-  (ok (eq (slot-value (make-instance 't-m-v-pizza :type :plain) 'rating) :missing)
-      "The :missing sentinel gets used for non-required field"))
+  (ok (not (slot-boundp (sanity-clause:load 't-m-v-pizza '(:type :plain)) 'rating))
+      "non-required fields are left unbound if data isn't supplied."))
 
 
 (deftest test-nested-field
@@ -261,8 +261,8 @@ E.g. (let ((string-field (make-field 'string))
       (ok (typep (slot-value (sanity-clause:load 'human data-with-cat) 'cat-friend) 'cat)
           "deserializes a cat class also, when data exists.")
 
-      (ok (eq (slot-value (sanity-clause:load 'human data-without-cat) 'cat-friend) :missing)
-          "deserializes the default missing value, when data is missing.")))
+      (ok (not (slot-boundp (sanity-clause:load 'human data-without-cat) 'cat-friend))
+          "leaves a slot unbound, when data is missing and the slot isn't required.")))
 
   (testing "list nesting"
     (let ((data-with-cats '(:name "Matt" :cat-friends ((:name "Tara" :age 10) (:name "Tiger" :age 4))))
@@ -276,8 +276,8 @@ E.g. (let ((string-field (make-field 'string))
       (ok (zerop (length (slot-value (sanity-clause:load 'human-with-cat-list data-with-zero-cats) 'cat-friends)))
           "deserializes a list of zero cat classes, when fields exists but is empty.")
 
-      (ok (eq (slot-value (sanity-clause:load 'human-with-cat-list data-without-cats-field) 'cat-friends) :missing)
-          "deserializes the default missing value, when data is missing."))))
+      (ok (not (slot-boundp (sanity-clause:load 'human-with-cat-list data-without-cats-field) 'cat-friends))
+          "leaves a slot unbound, when data is missing and the slot isn't required."))))
 
 
 (deftest test-one-schema-of-field

@@ -1,7 +1,7 @@
 (defsystem sanity-clause
   :author "Matt Novenstern"
-  :license "LGPLv3+"
-  :version "0.6.0"
+  :license "LGPLv3"
+  :version "0.7.0"
   :homepage "https://fisxoj.github.io/sanity-clause/"
   :depends-on ("alexandria"
                "cl-arrows"

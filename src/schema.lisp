@@ -11,21 +11,27 @@
         ((favorite-dog :type symbol
                        :field-type :member
                        :members (:wedge :walter)
-                       :initarg :favorite-dog
+                       :data-key \"favoriteDog\"
                        :required t)
          (age :type (integer 0)
-              :initarg :age
+              :data-key \"age\"
               :required t)
          (potato :type string
-                 :initarg :potato
+                 :data-key \"potato\"
                  :required t))
         (:metaclass validated-metaclass))
 
-The above defines a class that can be instantiated with :function:`make-instance`, but will error if the initargs don't satisfy the contract required by the field.
+The above defines a class that can be instantiated with :function:`sanity-clause.protocol:load, but will error if the initargs don't satisfy the contract required by the field.
+
+::
+
+    (sanity-clause:load 'person '((\"favoriteDog\" . \"wedge\")
+                                  (\"age\" . 10)
+                                  (\"potato\" . \"weasel\"))
 
 Some special types can be specifed with lisp type specs, like ``age`` above, which will generate an :class:`sanity-clause.field:integer-field`, with validations requiring the value be at least 0.
 
-**Nota Bene:** At the moment, there is no validation done on updating slots after instances are created."))
+**Nota Bene:** At the moment, there is no validation done on updating slots after instances are created and only instances created with :function:`sanity-clause.protocol:load` are checked.  Using :function:`make-instance` doesn't validate anything."))
 
 (in-package :sanity-clause.schema)
 
@@ -130,32 +136,33 @@ In the event the type isn't a simple type, assume it's a class with metaclass :c
   ())
 
 
-(defmethod make-instance :around ((class validated-metaclass) &rest initargs)
+(defmethod make-instance :around ((class validated-metaclass) &rest initargs &key ((data data)))
 
   (c2mop:ensure-finalized class)
 
-  (let ((validated-initargs nil)
+  (let (
         ;; There's one special case here to read values from environment variables if the &rest args
         ;; passed here are '(:source :env)
-        (data-source (if (and (= 2 (length initargs))
-                              (eq (first initargs) :source)
-                              (eq (second initargs) :env))
+        (data-source (if (equal '(:source :env) data)
                          :env
-                         initargs)))
+                         data))
+        (instance (apply #'call-next-method class (remove-from-plist initargs 'data :source))))
 
     (dolist (slot (c2mop:class-slots class))
 
-      (let* ((field (field-of slot))
-             (initarg (first (c2mop:slot-definition-initargs slot))))
+      (let ((field (field-of slot)))
 
         (when (and (sanity-clause.field:load-field-p field)
                    ;; Don't bother trying to load something we don't have a data-key for
                    (sanity-clause.field:data-key-of field))
 
-          (appendf validated-initargs
-                   (list initarg (sanity-clause.protocol:resolve (field-of slot) data-source))))))
+          (let ((value (sanity-clause.protocol:resolve field data-source)))
 
-    (apply #'call-next-method class validated-initargs)))
+            (unless (eq value :missing)
+              (setf (c2mop:slot-value-using-class class instance slot)
+                    value))))))
+
+    (values instance)))
 
 
 (defmethod c2mop:validate-superclass ((mc validated-metaclass) (c standard-object))
@@ -218,18 +225,6 @@ In the event the type isn't a simple type, assume it's a class with metaclass :c
   (sanity-clause.protocol:get-value (field-of slot) object))
 
 
-(defun collect-initargs-from-list (class data)
-  "Converts input data that is an alist, plist, object, or hash-table to ``([initarg] [value] ...)`` so it is suitable for passing to :function:`make-instance`.  Note that, while it tries to be very lenient about case and symbol/string comparison, implementation details (like the test function for a hash table) will affect the behavior of this function."
-
-  (declare (type validated-metaclass class))
-
-  (c2mop:ensure-finalized class)
-
-  (loop for slot in (c2mop:class-slots class)
-        when (sanity-clause.field:load-field-p (field-of slot))
-          collecting (first (c2mop:slot-definition-initargs slot))
-        collecting (sanity-clause.protocol:get-value slot data)))
-
 ;;; Implementations of the load method for lists or metaclasses
 
 (defmethod sanity-clause.protocol:load ((schema list) data &optional format)
@@ -254,10 +249,10 @@ In the event the type isn't a simple type, assume it's a class with metaclass :c
 (defmethod sanity-clause.protocol:load ((class validated-metaclass) data &optional format)
   (declare (ignore format))
 
-  (apply #'make-instance class (collect-initargs-from-list class data)))
+  (make-instance class 'data data))
 
 
-;;; Implementations of the dump method ofr lists or metaclasses
+;;; Implementations of the dump method for lists or metaclasses
 
 (defmethod sanity-clause.protocol:dump ((schema symbol) data &optional format)
   (sanity-clause.protocol:dump (find-class schema) data format))
