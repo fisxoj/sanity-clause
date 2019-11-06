@@ -441,15 +441,51 @@ examples::
 "))
 
 
+(defmethod initialize-instance :after ((field map-field) &key)
+
+  (labels ((ensure-subfield (field-args-or-field)
+             (etypecase field-args-or-field
+               ((or symbol cons)
+                (apply #'make-field (make-args field-args-or-field)))
+
+               (field
+                ;; The sub-field needs the same data-key as the parent to get the data
+                ;; might as well set attribute, too
+                (with-slots (data-key attribute) field-args-or-field
+                  (setf data-key (data-key-of field)
+                        attribute (attribute-of field)))
+                field-args-or-field)))
+
+           (make-args (subfield-args)
+             (destructuring-bind (type . args) (ensure-list subfield-args)
+               ;; insert overridden args before the given ones so those values get
+               ;; used instead of any later ones (as a result of how plists work).
+               (list* type
+                      :data-key (data-key-of field)
+                      :attribute (attribute-of field)
+                      (sanity-clause.validator:hydrate-validators args)))))
+
+    (setf (key-field-of field) (ensure-subfield (key-field-of field))
+          (value-field-of field) (ensure-subfield (value-field-of field)))))
+
 
 (defmethod sanity-clause.protocol:resolve ((field map-field) data &optional parents)
-  (let (accumulator)
-    (with-slots (key-field value-field) field
-      (sanity-clause.util:do-key-values (k v) data
-        (push (cons (sanity-clause.protocol:resolve key-field k (list* key-field parents))
-                    (sanity-clause.protocol:resolve value-field v (list* value-field parents)))
-              accumulator)))
-    accumulator))
+  (declare (ignore parents))
+
+  (flet ((deserialize-and-validate (field value)
+           (let ((value (sanity-clause.protocol:deserialize field value)))
+             (sanity-clause.protocol:validate field value)
+             value)))
+
+    (let (accumulator
+          (value (sanity-clause.protocol:get-value field data)))
+
+      (with-slots (key-field value-field) field
+        (sanity-clause.util:do-key-values (k v) value
+          (push (cons (deserialize-and-validate key-field k)
+                      (deserialize-and-validate value-field v))
+                accumulator)))
+      accumulator)))
 
 
 (define-final-class one-field-of-field (field)
