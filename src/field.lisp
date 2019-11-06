@@ -566,10 +566,17 @@ Use the ``:schema-choices`` initarg to provide a list of schema classes to try.
 (defmethod sanity-clause.protocol:resolve ((field one-schema-of-field) data &optional parents)
   (loop for (try-schema . rest) on (schema-choices-of field)
         ;; if the cdr of the field options is nil, we're out of other options
-        for last-p = (not rest)
+        for last-p = (null rest)
 
         do (handler-case (return (sanity-clause.protocol:load try-schema data))
-             (t (e) (when last-p (error 'conversion-error
-                                        :from-error e
-                                        :field field
-                                        :parents (reverse (list* field parents))))))))
+             (t (e) (when (and last-p (required-p field))
+                      (error 'conversion-error
+                             :from-error e
+                             :field field
+                             :parents (reverse (list* field parents))))))))
+
+
+(defmethod sanity-clause.protocol:load ((field field) data &optional format)
+  (declare (ignore format))
+
+  (sanity-clause.protocol:resolve field data))
