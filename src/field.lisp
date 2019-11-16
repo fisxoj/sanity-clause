@@ -593,7 +593,7 @@ Use the ``:schema-choices`` initarg to provide a list of schema classes to try.
   field)
 
 
-(defmethod sanity-clause.protocol:resolve ((field one-schema-of-field) data &optional parents)
+(defmethod sanity-clause.protocol:deserialize ((field one-schema-of-field) data)
   (loop for (try-schema . rest) on (schema-choices-of field)
         ;; if the cdr of the field options is nil, we're out of other options
         for last-p = (null rest)
@@ -602,8 +602,7 @@ Use the ``:schema-choices`` initarg to provide a list of schema classes to try.
              (t (e) (when (and last-p (required-p field))
                       (error 'conversion-error
                              :from-error e
-                             :field field
-                             :parents (reverse (list* field parents))))))))
+                             :field field))))))
 
 
 (defmethod sanity-clause.protocol:load ((field field) data &optional format)

@@ -293,7 +293,7 @@
   (defclass pie-list ()
     ((pies :type list
            :field-type :list
-           :element-type pie
+           :element-type (:nested :element-type pie)
            :initarg :pies
            :data-key :pies))
     (:metaclass sanity-clause.schema:validated-metaclass))

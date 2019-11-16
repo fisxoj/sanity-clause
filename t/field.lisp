@@ -248,7 +248,7 @@ E.g. (let ((string-field (make-field 'string))
     ((name :type string
            :initarg :name)
      (cat-friends :field-type :list
-                  :element-type cat
+                  :element-type (:nested :element-type cat)
                   :initarg :cat-friends))
     (:metaclass sanity-clause:validated-metaclass))
 
