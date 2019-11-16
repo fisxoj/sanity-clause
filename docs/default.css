@@ -210,8 +210,11 @@ pre.address {
     font-size: 100% }
 
 pre.literal-block, pre.doctest-block {
-    margin-left: 2em ;
-    margin-right: 2em }
+    font-family: 'Fira Mono', monospace;
+    padding: 1em 2em;
+    background: #eee;
+    border-radius: 4px;
+    overflow-x: auto; }
 
 span.classifier {
     font-family: sans-serif ;
@@ -279,11 +282,12 @@ ul.auto-toc {
 
 /* Begin coo customization */
 
-@import url("//fonts.googleapis.com/css?family=Fira+Mono|Fira+Sans");
+@import url("//fonts.googleapis.com/css?family=Fira+Mono|Fira+Sans&display=swap");
 
 :root {
     font-family: "Fira Sans", sans-serif;
     font-size: 16px;
+    line-height: 1.5em;
 }
 
 .document {
@@ -295,55 +299,56 @@ span.pre {
     font-family: "Fira Mono", monospace;
 }
 
+
 h2 {
     background: #eee;
-    border-width: 1px 0;
+    border-width: 1px 0 0;
     border-color: black;
     border-style: solid;
+    padding: 1em 0 0.5em 1em;
+    letter-spacing: 2px;
+}
+
+tt {
+    font-family: "Fira Mono", monospace;
 }
 
 .ref-package {
-    font-family: "Fira Mono", mono;
-    background-color: #eee;
+    font-family: 'Fira Mono', monospace;
     color: #ab7967;
     padding: 3px;
-    border-radius: 6px;
+    border-radius: 4px;
 }
 
 .ref-class {
-    font-family: "Fira Mono", mono;
-    background-color: #eee;
+    font-family: 'Fira Mono', monospace;
     color: #99c794;
     padding: 3px;
-    border-radius: 6px;
+    border-radius: 4px;
 }
 
 .ref-variable {
-    font-family: "Fira Mono", mono;
-    background-color: #eee;
+    font-family: 'Fira Mono', monospace;
     color: #6699cc;
     padding: 3px;
-    border-radius: 6px;
+    border-radius: 4px;
 }
 
 .ref-macro {
-    font-family: "Fira Mono", mono;
-    background-color: #eee;
+    font-family: 'Fira Mono', monospace;
     color: #fac863;
     padding: 3px;
-    border-radius: 6px;
+    border-radius: 4px;
 }
 
 .ref-function {
-    font-family: "Fira Mono", mono;
-    background-color: #eee;
+    font-family: 'Fira Mono', monospace;
     color: #c594c5;
     padding: 3px;
-    border-radius: 6px;
+    border-radius: 4px;
 }
 
 .param {
-    background-color: #eee;
     color: #6699cc;
 }
 
