@@ -450,10 +450,14 @@ Also contains :function:`sanity-clause.protocol:get-value`, :function:`sanity-cl
 
     (trivial-types:proper-list
      (with-slots (element-type) field
-       (mapcar (lambda (item) (let ((value (sanity-clause.protocol:deserialize element-type item)))
-                                (sanity-clause.protocol:validate element-type value)
-                                value))
-               value)))))
+       (flet ((load-element (item)
+                (let ((value (sanity-clause.protocol:deserialize element-type item)))
+                  (sanity-clause.protocol:validate element-type value)
+                  value)))
+         (mapcar #'load-element value))))
+
+    (sequence
+     (sanity-clause.protocol:deserialize field (coerce value 'list)))))
 
 
 (define-final-class map-field (field)
