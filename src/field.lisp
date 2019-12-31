@@ -84,7 +84,7 @@ Also contains :function:`sanity-clause.protocol:get-value`, :function:`sanity-cl
 
 (defmethod print-object ((object field) stream)
   (print-unreadable-object (object stream :type t :identity t)
-    (format stream "~@[data-key: ~a~]" (data-key-of object))))
+    (format stream "~@[data-key: ~a~]" (if (slot-boundp object 'data-key) (data-key-of object) "[unbound]"))))
 
 ;;; The most generic forms of these methods are defined here
 (defun all-validators (field)
