@@ -230,9 +230,9 @@ E.g. (let ((string-field (make-field 'string))
 (deftest test-nested-field
   (defclass cat ()
     ((name :type string
-           :initarg :name)
+           :data-key :name)
      (age :type integer
-          :initarg :age))
+          :initarg :data-key))
     (:metaclass sanity-clause:validated-metaclass))
 
   (defclass human ()
@@ -246,10 +246,10 @@ E.g. (let ((string-field (make-field 'string))
 
   (defclass human-with-cat-list ()
     ((name :type string
-           :initarg :name)
+           :data-key :name)
      (cat-friends :field-type :list
-                  :element-type cat
-                  :initarg :cat-friends))
+                  :element-type (:nested :element-type cat)
+                  :data-key :cat-friends))
     (:metaclass sanity-clause:validated-metaclass))
 
   (testing "simple nesting"
@@ -265,7 +265,11 @@ E.g. (let ((string-field (make-field 'string))
           "leaves a slot unbound, when data is missing and the slot isn't required.")))
 
   (testing "list nesting"
-    (let ((data-with-cats '(:name "Matt" :cat-friends ((:name "Tara" :age 10) (:name "Tiger" :age 4))))
+    (let ((data-with-cats '(:name "Matt"
+                            :cat-friends ((:name "Tara"
+                                           :age 10)
+                                          (:name "Tiger"
+                                           :age 4))))
           (data-without-cats-field '(:name "Matt"))
           (data-with-zero-cats '(:name "Matt" :cat-friends ())))
 
@@ -284,26 +288,29 @@ E.g. (let ((string-field (make-field 'string))
   (testing "A one-schema-of-field with two options"
 
     (defclass tosof-pizza ()
-      ((name :initarg :name
+      ((name :data-key :name
              :type string
              :required t))
       (:metaclass sanity-clause.schema:validated-metaclass))
 
     (defclass tosof-weasel-count ()
-      ((count :initarg :count
+      ((count :data-key :count
               :type integer
               :validate (lambda (v) (sanity-clause.validator:int v :min 0))
               :required t))
       (:metaclass sanity-clause.schema:validated-metaclass))
 
-    (let ((dumb-field (sanity-clause.field:make-field :one-schema-of :schema-choices '(tosof-pizza tosof-weasel-count) :required t)))
-      (ok (typep (sanity-clause.protocol:resolve dumb-field '(:name "pepperoni")) 'tosof-pizza)
+    (let ((dumb-field (sanity-clause.field:make-field :one-schema-of
+                                                      :schema-choices '(tosof-pizza tosof-weasel-count)
+                                                      :required t)))
+
+      (ok (typep (sanity-clause.protocol:deserialize dumb-field '(:name "pepperoni")) 'tosof-pizza)
           "decodes the first option.")
 
-      (ok (typep (sanity-clause.protocol:resolve dumb-field '(:count "112")) 'tosof-weasel-count)
+      (ok (typep (sanity-clause.protocol:deserialize dumb-field '(:count "112")) 'tosof-weasel-count)
           "decodes the second option.")
 
-      (ok (signals (sanity-clause.protocol:resolve dumb-field '(:armadillo :arnie)) 'sanity-clause.field:conversion-error)
+      (ok (signals (sanity-clause.protocol:deserialize dumb-field '(:armadillo :arnie)) 'sanity-clause.field:conversion-error)
           "signals an error if it can't decode either option.")))
 
   (testing "a descriminated union based on a 'version' field)"
@@ -331,7 +338,7 @@ E.g. (let ((string-field (make-field 'string))
     (let ((union-type-field (make-field :one-schema-of :schema-choices '(tosof-v1 tosof-v2 tosof-v3))))
       (ok (every 'eq
                  '(tosof-v3 tosof-v1 tosof-v2)
-                 (mapcar (lambda (data) (class-name (class-of (sanity-clause:resolve union-type-field data))))
+                 (mapcar (lambda (data) (class-name (class-of (sanity-clause.protocol:deserialize union-type-field data))))
                          '((:version "3") (:version "1") (:version "2"))))
           "decodes to the correct version of the class."))))
 

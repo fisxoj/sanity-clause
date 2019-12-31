@@ -11,25 +11,31 @@
 	   #:not-empty
 
            #:hydrate-validators
-           #:make-validator)
+           #:ensure-validator)
   (:documentation "Some validation functions that can be used with fields to make sure data has certain properties."))
 
 (in-package :sanity-clause.validator)
 
 
-(defun make-validator (keyword-spec)
-  "Find a validator function by keyword-spec and return the function represented by the spec."
+(defun ensure-validator (keyword-spec)
+  "Find a validator function by keyword-spec and return the function represented by the spec unless it's already a function."
 
-  (let ((keyword-spec (ensure-list keyword-spec)))
+  (if (functionp keyword-spec)
+      keyword-spec
+      (let ((keyword-spec (ensure-list keyword-spec))
+            (validator-package (find-package :sanity-clause.validator)))
 
-    (lambda (value) (apply (find-symbol (string-upcase (car keyword-spec)) (find-package :sanity-clause.validator)) value (cdr keyword-spec)))))
+        (lambda (value)
+          (apply (find-symbol (string-upcase (car keyword-spec)) validator-package)
+                 value
+                 (cdr keyword-spec))))))
 
 
 (defun hydrate-validators (spec-plist)
   "Takes a list of validators in the form of keywords and turns them into living function references."
 
   (when-let ((validator-spec (getf spec-plist :validator)))
-    (setf (getf spec-plist :validator) (mapcar #'make-validator validator-spec)))
+    (setf (getf spec-plist :validator) (mapcar #'ensure-validator validator-spec)))
   spec-plist)
 
 

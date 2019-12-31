@@ -84,7 +84,7 @@ Also contains :function:`sanity-clause.protocol:get-value`, :function:`sanity-cl
 
 (defmethod print-object ((object field) stream)
   (print-unreadable-object (object stream :type t :identity t)
-    (format stream "~@[data-key: ~a~]" (data-key-of object))))
+    (format stream "~@[data-key: ~a~]" (if (slot-boundp object 'data-key) (data-key-of object) "[unbound]"))))
 
 ;;; The most generic forms of these methods are defined here
 (defun all-validators (field)
@@ -393,7 +393,7 @@ Also contains :function:`sanity-clause.protocol:get-value`, :function:`sanity-cl
 
 
 (defclass nested-element ()
-  ((element-type :type (or field symbol)
+  ((element-type :type (or field symbol trivial-types:proper-list)
                  :initarg :element-type
                  :initform (error "A nested field requires an element-type to deserialize members to.")
                  :reader element-type-of
@@ -410,6 +410,33 @@ Also contains :function:`sanity-clause.protocol:get-value`, :function:`sanity-cl
   (:documentation "A field that represents a complex object located at this slot."))
 
 
+(defmethod initialize-instance :after ((field list-field) &key)
+
+  (labels ((ensure-subfield (field-args-or-field)
+             (etypecase field-args-or-field
+               ((or symbol cons)
+                (apply #'make-field (make-args field-args-or-field)))
+
+               (field
+                ;; The sub-field needs the same data-key as the parent to get the data
+                ;; might as well set attribute, too
+                (with-slots (data-key attribute) field-args-or-field
+                  (setf data-key (data-key-of field)
+                        attribute (attribute-of field)))
+                field-args-or-field)))
+
+           (make-args (subfield-args)
+             (destructuring-bind (type . args) (ensure-list subfield-args)
+               ;; insert overridden args before the given ones so those values get
+               ;; used instead of any later ones (as a result of how plists work).
+               (list* type
+                      :data-key (data-key-of field)
+                      :attribute (attribute-of field)
+                      (sanity-clause.validator:hydrate-validators args)))))
+
+    (setf (slot-value field 'element-type) (ensure-subfield (element-type-of field)))))
+
+
 (defmethod sanity-clause.protocol:deserialize ((field nested-field) value)
   (if (eq value :missing)
       value
@@ -423,7 +450,14 @@ Also contains :function:`sanity-clause.protocol:get-value`, :function:`sanity-cl
 
     (trivial-types:proper-list
      (with-slots (element-type) field
-       (mapcar (lambda (item) (sanity-clause.protocol:load element-type item)) value)))))
+       (flet ((load-element (item)
+                (let ((value (sanity-clause.protocol:deserialize element-type item)))
+                  (sanity-clause.protocol:validate element-type value)
+                  value)))
+         (mapcar #'load-element value))))
+
+    (sequence
+     (sanity-clause.protocol:deserialize field (coerce value 'list)))))
 
 
 (define-final-class map-field (field)
@@ -441,15 +475,51 @@ examples::
 "))
 
 
+(defmethod initialize-instance :after ((field map-field) &key)
+
+  (labels ((ensure-subfield (field-args-or-field)
+             (etypecase field-args-or-field
+               ((or symbol cons)
+                (apply #'make-field (make-args field-args-or-field)))
+
+               (field
+                ;; The sub-field needs the same data-key as the parent to get the data
+                ;; might as well set attribute, too
+                (with-slots (data-key attribute) field-args-or-field
+                  (setf data-key (data-key-of field)
+                        attribute (attribute-of field)))
+                field-args-or-field)))
+
+           (make-args (subfield-args)
+             (destructuring-bind (type . args) (ensure-list subfield-args)
+               ;; insert overridden args before the given ones so those values get
+               ;; used instead of any later ones (as a result of how plists work).
+               (list* type
+                      :data-key (data-key-of field)
+                      :attribute (attribute-of field)
+                      (sanity-clause.validator:hydrate-validators args)))))
+
+    (setf (key-field-of field) (ensure-subfield (key-field-of field))
+          (value-field-of field) (ensure-subfield (value-field-of field)))))
+
 
 (defmethod sanity-clause.protocol:resolve ((field map-field) data &optional parents)
-  (let (accumulator)
-    (with-slots (key-field value-field) field
-      (sanity-clause.util:do-key-values (k v) data
-        (push (cons (sanity-clause.protocol:resolve key-field k (list* key-field parents))
-                    (sanity-clause.protocol:resolve value-field v (list* value-field parents)))
-              accumulator)))
-    accumulator))
+  (declare (ignore parents))
+
+  (flet ((deserialize-and-validate (field value)
+           (let ((value (sanity-clause.protocol:deserialize field value)))
+             (sanity-clause.protocol:validate field value)
+             value)))
+
+    (let (accumulator
+          (value (sanity-clause.protocol:get-value field data)))
+
+      (with-slots (key-field value-field) field
+        (sanity-clause.util:do-key-values (k v) value
+          (push (cons (deserialize-and-validate key-field k)
+                      (deserialize-and-validate value-field v))
+                accumulator)))
+      accumulator)))
 
 
 (define-final-class one-field-of-field (field)
@@ -527,13 +597,19 @@ Use the ``:schema-choices`` initarg to provide a list of schema classes to try.
   field)
 
 
-(defmethod sanity-clause.protocol:resolve ((field one-schema-of-field) data &optional parents)
+(defmethod sanity-clause.protocol:deserialize ((field one-schema-of-field) data)
   (loop for (try-schema . rest) on (schema-choices-of field)
         ;; if the cdr of the field options is nil, we're out of other options
-        for last-p = (not rest)
+        for last-p = (null rest)
 
         do (handler-case (return (sanity-clause.protocol:load try-schema data))
-             (t (e) (when last-p (error 'conversion-error
-                                        :from-error e
-                                        :field field
-                                        :parents (reverse (list* field parents))))))))
+             (t (e) (when (and last-p (required-p field))
+                      (error 'conversion-error
+                             :from-error e
+                             :field field))))))
+
+
+(defmethod sanity-clause.protocol:load ((field field) data &optional format)
+  (declare (ignore format))
+
+  (sanity-clause.protocol:resolve field data))

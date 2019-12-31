@@ -99,7 +99,34 @@
 
         (ok (signals (sanity-clause.protocol:load schema (make-test-hash '((:name . "Matt"))))
                 'required-value-error)
-            "A missing, required value raises a required value error.")))))
+            "A missing, required value raises a required value error."))))
+
+  (testing "nested data"
+    (defclass nested-data-person-schema ()
+      ((name :type string
+             :validator sanity-clause.validator:not-empty
+             :initarg :name
+             :data-key "name"
+             :required t)
+       (age :type (integer 0)
+            :initarg :age
+            :data-key "age"
+            :required t))
+      (:metaclass sanity-clause:validated-metaclass))
+
+    (defclass nested-data-schema ()
+      ((person :initarg :person
+               :field-type :nested
+               :element-type nested-data-person-schema
+               :data-key "person"
+               :required t))
+      (:metaclass sanity-clause:validated-metaclass))
+
+    (let* ((data '(("person" . (("name" . "some-name")
+                                ("age" . 11))))))
+
+      (ok (sanity-clause.protocol:load 'nested-data-schema data)
+          "parses the nested object."))))
 
 
 (deftest test-examples
@@ -266,7 +293,7 @@
   (defclass pie-list ()
     ((pies :type list
            :field-type :list
-           :element-type pie
+           :element-type (:nested :element-type pie)
            :initarg :pies
            :data-key :pies))
     (:metaclass sanity-clause.schema:validated-metaclass))
