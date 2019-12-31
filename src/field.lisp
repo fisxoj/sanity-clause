@@ -393,7 +393,7 @@ Also contains :function:`sanity-clause.protocol:get-value`, :function:`sanity-cl
 
 
 (defclass nested-element ()
-  ((element-type :type (or field symbol)
+  ((element-type :type (or field symbol trivial-types:proper-list)
                  :initarg :element-type
                  :initform (error "A nested field requires an element-type to deserialize members to.")
                  :reader element-type-of
