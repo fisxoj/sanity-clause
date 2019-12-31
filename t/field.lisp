@@ -230,9 +230,9 @@ E.g. (let ((string-field (make-field 'string))
 (deftest test-nested-field
   (defclass cat ()
     ((name :type string
-           :initarg :name)
+           :data-key :name)
      (age :type integer
-          :initarg :age))
+          :initarg :data-key))
     (:metaclass sanity-clause:validated-metaclass))
 
   (defclass human ()
@@ -246,10 +246,10 @@ E.g. (let ((string-field (make-field 'string))
 
   (defclass human-with-cat-list ()
     ((name :type string
-           :initarg :name)
+           :data-key :name)
      (cat-friends :field-type :list
                   :element-type (:nested :element-type cat)
-                  :initarg :cat-friends))
+                  :data-key :cat-friends))
     (:metaclass sanity-clause:validated-metaclass))
 
   (testing "simple nesting"
@@ -265,7 +265,11 @@ E.g. (let ((string-field (make-field 'string))
           "leaves a slot unbound, when data is missing and the slot isn't required.")))
 
   (testing "list nesting"
-    (let ((data-with-cats '(:name "Matt" :cat-friends ((:name "Tara" :age 10) (:name "Tiger" :age 4))))
+    (let ((data-with-cats '(:name "Matt"
+                            :cat-friends ((:name "Tara"
+                                           :age 10)
+                                          (:name "Tiger"
+                                           :age 4))))
           (data-without-cats-field '(:name "Matt"))
           (data-with-zero-cats '(:name "Matt" :cat-friends ())))
 
