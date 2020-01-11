@@ -1,4 +1,5 @@
 language: common-lisp
+os: linux
 sudo: false
 notifications:
   email: false
@@ -8,6 +9,9 @@ addons:
     packages:
       - libc6-i386
       - openjdk-8-jre
+
+services:
+  - docker
 
 env:
   global:
@@ -37,9 +41,22 @@ cache:
     - $HOME/.roswell
     - $HOME/.config/common-lisp
 
-before_script:
-  - ros --version
-  - ros config
-
-script:
-  - rove sanity-clause.asd
+jobs:
+  include:
+    - name: unit tests
+      before_script:
+        - ros --version
+        - ros config
+      script:
+        - rove sanity-clause.asd
+    - name: update docs
+      before_script:
+        - docker pull quay.io/fisxoj/coo:v1
+      script:
+        - docker run --rm -it -v $PWD:/work:Z quay.io/fisxoj/coo:v1
+      deploy:
+        provider: pages:git
+        edge: true
+        local_dir: docs
+        on:
+          branch: master
