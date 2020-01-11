@@ -1,6 +1,6 @@
 language: common-lisp
 os: linux
-sudo: false
+
 notifications:
   email: false
 
@@ -19,17 +19,8 @@ env:
     - ROSWELL_INSTALL_DIR=$HOME/.roswell
     - COVERAGE_EXCLUDE=t
   matrix:
-    - LISP=sbcl-bin COVERALLS=true
-    - LISP=ccl-bin
-    - LISP=ecl
-    # - LISP=allegro
-    - LISP=abcl
 
 matrix:
-  allow_failures:
-    - env: LISP=clisp
-    - env: LISP=abcl
-    - env: LISP=ecl
 
 install:
   # Install Roswell
@@ -41,15 +32,39 @@ cache:
     - $HOME/.roswell
     - $HOME/.config/common-lisp
 
+# This gets the environment overridden to set the lisp implementation to test
+test-job: &test
+  stage: test
+  before_script:
+    - ros --version
+    - ros config
+  script:
+    - rove sanity-clause.asd
+
 jobs:
+  finish_fast: true
+  allow_failures:
+    - env: LISP=clisp
+    - env: LISP=abcl
+    - env: LISP=ecl
   include:
-    - name: unit tests
-      before_script:
-        - ros --version
-        - ros config
-      script:
-        - rove sanity-clause.asd
+    - <<: *test
+      env:
+        - LISP=sbcl-bin COVERALLS=true
+    - <<: *test
+      env:
+        - LISP=ccl-bin
+    - <<: *test
+      env:
+        - LISP=ecl
+    - <<: *test
+      env:
+        - LISP=allegro
+    - <<: *test
+      env:
+        - LISP=abcl
     - name: update docs
+      stage: deploy
       before_script:
         - docker pull quay.io/fisxoj/coo:v1
       script:
