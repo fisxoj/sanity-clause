@@ -73,5 +73,4 @@ jobs:
         provider: pages:git
         edge: true
         local_dir: docs
-        on:
-          branch: master
+      if: type = push AND branch = master
