@@ -1,0 +1,93 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+ "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<link rel="stylesheet" href="default.css" type="text/css" />
+<title>sanity-clause.protocol
+
+ package</title>
+</head>
+<body>
+<div id="sanity-clause-protocol-package" class="document"><h1 class="title"><tt class="docutils literal">
+<span class="pre">sanity-clause.protocol</span></tt> package</h1>
+<p><a class="reference" href="index.html"><span>&lt;&lt; back to sanity-clause index</span></a></p>
+<p>The methods that govern behavior in sanity-clause.</p>
+<p>The methods relating to fields are:</p>
+<ul>
+<li><p class="first last"><a class="reference ref-function" href="sanity-clause.protocol.html#function__resolve"><span class="ref-function">resolve</span></a></p>
+</li>
+<li><p class="first last"><a class="reference ref-function" href="sanity-clause.protocol.html#function__deserialize"><span class="ref-function">deserialize</span></a></p>
+</li>
+<li><p class="first last"><a class="reference ref-function" href="sanity-clause.protocol.html#function__serialize"><span class="ref-function">serialize</span></a></p>
+</li>
+<li><p class="first last"><a class="reference ref-function" href="sanity-clause.protocol.html#function__validate"><span class="ref-function">validate</span></a></p>
+</li>
+<li><p class="first last"><a class="reference ref-function" href="sanity-clause.protocol.html#function__get-value"><span class="ref-function">get-value</span></a></p>
+</li>
+</ul>
+<p>The methods relating to schemas are:</p>
+<ul>
+<li><p class="first last"><a class="reference ref-function" href="sanity-clause.protocol.html#function__load"><span class="ref-function">load</span></a></p>
+</li>
+<li><p class="first last"><a class="reference ref-function" href="sanity-clause.protocol.html#function__dump"><span class="ref-function">dump</span></a></p>
+</li>
+</ul>
+<p>Exported symbols:</p>
+<div id="generic-functions" class="section"><h2><a name="generic-functions">Generic Functions</a></h2>
+<a id="generic-function-dump" class="target" name="generic-function-dump"></a><div id="dump" class="section"><h3><a name="dump"><tt class="docutils literal">
+<span class="pre">dump</span></tt></a></h3>
+<p><tt class="docutils literal">
+<span class="pre">(SCHEMA</span> <span class="pre">DATA</span> <span class="pre">&amp;OPTIONAL</span> <span class="pre">FORMAT)</span></tt></p>
+<p>WARNING: This isn't fully tested/supported, but it might work!  I reserve the right to change the API in breaking ways, though.</p>
+<p>dump takes some data an serializes it to a plist or alist based on <tt class="docutils literal param">
+<span class="pre">format</span></tt>, which can be set to, well, <tt class="docutils literal">
+<span class="pre">:plist</span></tt> or <tt class="docutils literal">
+<span class="pre">:alist</span></tt>.</p>
+<a id="generic-function-load" class="target" name="generic-function-load"></a></div>
+<div id="load" class="section"><h3><a name="load"><tt class="docutils literal">
+<span class="pre">load</span></tt></a></h3>
+<p><tt class="docutils literal">
+<span class="pre">(SCHEMA</span> <span class="pre">DATA</span> <span class="pre">&amp;OPTIONAL</span> <span class="pre">FORMAT)</span></tt></p>
+<p>Deserializes <tt class="docutils literal param">
+<span class="pre">data</span></tt> into an instance of <tt class="docutils literal param">
+<span class="pre">schema</span></tt>.  Fills in default values and validates fields.  If <tt class="docutils literal param">
+<span class="pre">schema</span></tt> is <tt class="docutils literal">
+<span class="pre">:env</span></tt>, it will try to load from environment variables.</p>
+<a id="generic-function-get-value" class="target" name="generic-function-get-value"></a></div>
+<div id="get-value" class="section"><h3><a name="get-value"><tt class="docutils literal">
+<span class="pre">get-value</span></tt></a></h3>
+<p><tt class="docutils literal">
+<span class="pre">(FIELD</span> <span class="pre">OBJECT)</span></tt></p>
+<p>Tries to fetch the value corresponding to the field from some datastructure.  <tt class="docutils literal param">
+<span class="pre">field-name</span></tt> is used if no attribute is explicitly set on the field.</p>
+<a id="generic-function-validate" class="target" name="generic-function-validate"></a></div>
+<div id="validate" class="section"><h3><a name="validate"><tt class="docutils literal">
+<span class="pre">validate</span></tt></a></h3>
+<p><tt class="docutils literal">
+<span class="pre">(FIELD</span> <span class="pre">VALUE)</span></tt></p>
+<p>Run the validation checks for a given field and raise a <a class="reference ref-class" href="sanity-clause.field.html#class__validation-error"><span class="ref-class">sanity-clause.field:validation-error</span></a> if it is invalid.</p>
+<a id="generic-function-serialize" class="target" name="generic-function-serialize"></a></div>
+<div id="serialize" class="section"><h3><a name="serialize"><tt class="docutils literal">
+<span class="pre">serialize</span></tt></a></h3>
+<p><tt class="docutils literal">
+<span class="pre">(FIELD</span> <span class="pre">VALUE)</span></tt></p>
+<p>Converts the value of a field into another representation.</p>
+<a id="generic-function-deserialize" class="target" name="generic-function-deserialize"></a></div>
+<div id="deserialize" class="section"><h3><a name="deserialize"><tt class="docutils literal">
+<span class="pre">deserialize</span></tt></a></h3>
+<p><tt class="docutils literal">
+<span class="pre">(FIELD</span> <span class="pre">VALUE)</span></tt></p>
+<p>Converts the value retrieved from the raw data into the datatype the field expects to work with, or fails, raising a <a class="reference ref-class" href="sanity-clause.field.html#class__conversion-error"><span class="ref-class">sanity-clause.field:conversion-error</span></a>.</p>
+<a id="generic-function-resolve" class="target" name="generic-function-resolve"></a></div>
+<div id="resolve" class="section"><h3><a name="resolve"><tt class="docutils literal">
+<span class="pre">resolve</span></tt></a></h3>
+<p><tt class="docutils literal">
+<span class="pre">(FIELD</span> <span class="pre">DATA</span> <span class="pre">&amp;OPTIONAL</span> <span class="pre">PARENTS)</span></tt></p>
+<p>A function that encapsulates getting, corecing, and validating values for a field.  Calls <a class="reference ref-function" href="sanity-clause.protocol.html#function__get-value"><span class="ref-function">get-value</span></a>, <a class="reference ref-function" href="sanity-clause.protocol.html#function__deserialize"><span class="ref-function">deserialize</span></a>, and <a class="reference ref-function" href="sanity-clause.protocol.html#function__validate"><span class="ref-function">validate</span></a>.</p>
+</div>
+</div>
+<hr class ="docutils footer" /><div class="footer">Generated on : Sat, 11 Jan 2020 05:24:58 .
+</div>
+</div>
+</body>
+</html>
