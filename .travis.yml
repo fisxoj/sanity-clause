@@ -18,14 +18,6 @@ env:
     - PATH=$HOME/.roswell/bin:$PATH
     - ROSWELL_INSTALL_DIR=$HOME/.roswell
     - COVERAGE_EXCLUDE=t
-  matrix:
-
-matrix:
-
-install:
-  # Install Roswell
-  - curl -L https://raw.githubusercontent.com/snmsts/roswell/release/scripts/install-for-ci.sh | sh
-  - ros install fukamachi/rove
 
 cache:
   directories:
@@ -33,8 +25,12 @@ cache:
     - $HOME/.config/common-lisp
 
 # This gets the environment overridden to set the lisp implementation to test
-test-job: &test
+.test-job: &test
   stage: test
+  install:
+    # Install Roswell
+    - curl -L https://raw.githubusercontent.com/snmsts/roswell/release/scripts/install-for-ci.sh | sh
+    - ros install fukamachi/rove
   before_script:
     - ros --version
     - ros config
@@ -57,9 +53,9 @@ jobs:
     - <<: *test
       env:
         - LISP=ecl
-    - <<: *test
-      env:
-        - LISP=allegro
+    # - <<: *test
+    #   env:
+    #     - LISP=allegro
     - <<: *test
       env:
         - LISP=abcl

@@ -587,16 +587,6 @@ Use the ``:schema-choices`` initarg to provide a list of schema classes to try.
 **Note**: If your schema choices are very lenient (ie. every field is not required), this field will likely behave in unexpected ways.  That is, if you specify a list of classes that only have optional fields, sanity clause won't be able to figure out which one to use and will probably return the missing value instead of valid data.  You probably want at least one charactersitic field to be required."))
 
 
-(defmethod initialize-instance :after ((field one-schema-of-field) &key)
-  (flet ((ensure-class (symbol-or-class)
-           (if (c2mop:classp symbol-or-class)
-               symbol-or-class
-               (find-class symbol-or-class))))
-
-    (setf (schema-choices-of field) (mapcar #'ensure-class (schema-choices-of field))))
-  field)
-
-
 (defmethod sanity-clause.protocol:deserialize ((field one-schema-of-field) data)
   (loop for (try-schema . rest) on (schema-choices-of field)
         ;; if the cdr of the field options is nil, we're out of other options
