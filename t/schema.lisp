@@ -126,7 +126,32 @@
                                 ("age" . 11))))))
 
       (ok (sanity-clause.protocol:load 'nested-data-schema data)
-          "parses the nested object."))))
+          "parses the nested object.")))
+
+  (testing "a self-referential schema"
+
+    (ok
+     (defclass self-referential-schema ()
+       ((name :data-key "name"
+              :field-type :string
+              :validator sanity-clause.validator:not-empty
+              :required t)
+        (parent :data-key "parent"
+                :field-type :one-schema-of
+                :schema-choices (self-referential-schema)
+                :required nil))
+       (:metaclass sanity-clause:validated-metaclass))
+     "can be defined without error.")
+
+    (let ((person-without-parent '(("name" . "matt")))
+          (person-with-parent    '(("name" . "wedge")
+                                   ("parent" . (("name" . "matt"))))))
+
+      (ok (sanity-clause.protocol:load 'self-referential-schema person-without-parent)
+          "can be deserialized when the optional field is missing.")
+
+      (ok (sanity-clause.protocol:load 'self-referential-schema person-with-parent)
+          "can be deserialized when the optional field is present."))))
 
 
 (deftest test-examples
