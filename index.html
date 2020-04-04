@@ -33,7 +33,7 @@
 <blockquote> <p>You can't fool me. There ain't no santy clause!</p>
 <p class="attribution">&mdash; Chico Marx  </p>
 </blockquote> <p>Sanity clause is a data validation/contract library.  You might use it for configuration data, validating an api response, or documents from a datastore.  In a dynamically typed language, it helps you define clearly defined areas of doubt and uncertainty.  We should love our users, but we should never blindly trust their inputs.</p>
-<p>To make use of it, you define schemas, which can be property lists with keys and instances of <a class="reference ref-class" href="sanity-clause.field.html#class__field"><span class="ref-class">sanity-clause.field:field</span></a> subclasses as values (eg. <a class="reference ref-class" href="sanity-clause.field.html#class__integer-field"><span class="ref-class">sanity-clause.field:integer-field</span></a>, <a class="reference ref-class" href="sanity-clause.field.html#class__string-field"><span class="ref-class">sanity-clause.field:string-field</span></a>, &amp;c.) or using the class-based interface via <a class="reference ref-class" href="sanity-clause.schema.html#class__validated-metaclass"><span class="ref-class">sanity-clause.schema:validated-metaclass</span></a>.  For example:</p>
+<p>To make use of it, you define schemas, which can be property lists with keys and instances of <a class="reference ref-class" href="sanity-clause.field.html#class-field"><span class="ref-class">sanity-clause.field:field</span></a> subclasses as values (eg. <a class="reference ref-class" href="sanity-clause.field.html#class-integer-field"><span class="ref-class">sanity-clause.field:integer-field</span></a>, <a class="reference ref-class" href="sanity-clause.field.html#class-string-field"><span class="ref-class">sanity-clause.field:string-field</span></a>, &amp;c.) or using the class-based interface via <a class="reference ref-class" href="sanity-clause.schema.html#class-validated-metaclass"><span class="ref-class">sanity-clause.schema:validated-metaclass</span></a>.  For example:</p>
 <pre class="literal-block">
 (list :name (make-field :string) :age (make-field :integer))
 </pre><p>You can load these sorts of schemas from a file by writing them as sexps with keywords, like this:</p>
@@ -42,8 +42,8 @@ schema.sexp
 
 (:key (:string :validator (:not-empty) :default "potato")
  :key2 (:integer :validator ((:int :min 0)) :default 2))
-</pre><p>and then loading them using <a class="reference ref-function" href="sanity-clause.loadable-schema.html#function__load-schema"><span class="ref-function">sanity-clause.loadable-schema:load-schema</span></a> to load them.</p>
-<p>To use class-based schemas using <a class="reference ref-class" href="sanity-clause.schema.html#class__validated-metaclass"><span class="ref-class">sanity-clause.schema:validated-metaclass</span></a> you can do things like:</p>
+</pre><p>and then loading them using <a class="reference ref-function" href="sanity-clause.loadable-schema.html#function-load-schema"><span class="ref-function">sanity-clause.loadable-schema:load-schema</span></a> to load them.</p>
+<p>To use class-based schemas using <a class="reference ref-class" href="sanity-clause.schema.html#class-validated-metaclass"><span class="ref-class">sanity-clause.schema:validated-metaclass</span></a> you can do things like:</p>
 <pre class="literal-block">
 (defclass person ()
      ((favorite-dog :type symbol
@@ -164,7 +164,7 @@ schema.sexp
 </ul>
 </div>
 </div>
-<hr class ="docutils footer" /><div class="footer">Generated on : Wed, 22 Jan 2020 05:31:29 .
+<hr class ="docutils footer" /><div class="footer">Generated on : Sat, 04 Apr 2020 03:42:41 .
 </div>
 </div>
 </body>

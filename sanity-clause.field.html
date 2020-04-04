@@ -12,48 +12,37 @@
 <span class="pre">sanity-clause.field</span></tt> package</h1>
 <p><a class="reference" href="index.html"><span>&lt;&lt; back to sanity-clause index</span></a></p>
 <p>Field classes that can be used to validate data.</p>
-<p>Also contains <a class="reference ref-function" href="sanity-clause.protocol.html#function__get-value"><span class="ref-function">sanity-clause.protocol:get-value</span></a>, <a class="reference ref-function" href="sanity-clause.protocol.html#function__deserialize"><span class="ref-function">sanity-clause.protocol:deserialize</span></a>, and <a class="reference ref-function" href="sanity-clause.protocol.html#function__validate"><span class="ref-function">sanity-clause.protocol:validate</span></a>, which represent the lifecycle of loading data from some other object.</p>
+<p>Also contains <a class="reference ref-function" href="sanity-clause.protocol.html#function-get-value"><span class="ref-function">sanity-clause.protocol:get-value</span></a>, <a class="reference ref-function" href="sanity-clause.protocol.html#function-deserialize"><span class="ref-function">sanity-clause.protocol:deserialize</span></a>, and <a class="reference ref-function" href="sanity-clause.protocol.html#function-validate"><span class="ref-function">sanity-clause.protocol:validate</span></a>, which represent the lifecycle of loading data from some other object.</p>
 <p>Exported symbols:</p>
 <div id="functions" class="section"><h2><a name="functions">Functions</a></h2>
 <a id="function-make-field" class="target" name="function-make-field"></a><div id="make-field" class="section"><h3><a name="make-field"><tt class="docutils literal">
 <span class="pre">make-field</span></tt></a></h3>
-<p><tt class="docutils literal">
-<span class="pre">(TYPE</span> <span class="pre">&amp;REST</span> <span class="pre">ARGS)</span></tt></p>
+<p><a class="reference" href="https://github.com/fisxoj/sanity-clause/blob/master/src/field.lisp#L191"><span>[source]</span></a></p>
 <p>Make a field instance of class <tt class="docutils literal">
 <span class="pre">type-FIELD</span></tt> and give it initargs <tt class="docutils literal param">
 <span class="pre">args</span></tt>.</p>
 <a id="function-find-field" class="target" name="function-find-field"></a></div>
 <div id="find-field" class="section"><h3><a name="find-field"><tt class="docutils literal">
 <span class="pre">find-field</span></tt></a></h3>
-<p><tt class="docutils literal">
-<span class="pre">(TYPE)</span></tt></p>
+<p><a class="reference" href="https://github.com/fisxoj/sanity-clause/blob/master/src/field.lisp#L182"><span>[source]</span></a></p>
 <p>Find the class that corresponds to <tt class="docutils literal param">
 <span class="pre">type</span></tt> by name</p>
 <a id="function-dump-field-p" class="target" name="function-dump-field-p"></a></div>
 <div id="dump-field-p" class="section"><h3><a name="dump-field-p"><tt class="docutils literal">
 <span class="pre">dump-field-p</span></tt></a></h3>
-<p><tt class="docutils literal">
-<span class="pre">(FIELD)</span></tt></p>
+<p><a class="reference" href="https://github.com/fisxoj/sanity-clause/blob/master/src/field.lisp#L174"><span>[source]</span></a></p>
 <p>Is this field required for serialization (fields that have flow of :dump or :both)?</p>
 <a id="function-load-field-p" class="target" name="function-load-field-p"></a></div>
 <div id="load-field-p" class="section"><h3><a name="load-field-p"><tt class="docutils literal">
 <span class="pre">load-field-p</span></tt></a></h3>
-<p><tt class="docutils literal">
-<span class="pre">(FIELD)</span></tt></p>
+<p><a class="reference" href="https://github.com/fisxoj/sanity-clause/blob/master/src/field.lisp#L166"><span>[source]</span></a></p>
 <p>Is this field required for deserialization (fields that have flow of :load or :both)?</p>
 </div>
 </div>
 <div id="classes" class="section"><h2><a name="classes">Classes</a></h2>
 <a id="class-one-schema-of-field" class="target" name="class-one-schema-of-field"></a><div id="one-schema-of-field" class="section"><h3><a name="one-schema-of-field"><tt class="docutils literal">
 <span class="pre">one-schema-of-field</span></tt></a></h3>
-<table class="field-list" frame="void" rules="none"><col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field"><th colspan="1" class="field-name">Superclasses:</th><td class="field-body"><tt class="docutils literal">
-<span class="pre">(FIELD)</span></tt></td>
-</tr>
-</tbody>
-</table>
+<p><a class="reference" href="https://github.com/fisxoj/sanity-clause/blob/master/src/field.lisp#L0"><span>[source]</span></a></p>
 <p>A field type that allows any of the schemas specified.</p>
 <p>Use the <tt class="docutils literal">
 <span class="pre">:schema-choices</span></tt> initarg to provide a list of schema classes to try.</p>
@@ -61,206 +50,112 @@
 <a id="class-one-field-of-field" class="target" name="class-one-field-of-field"></a></div>
 <div id="one-field-of-field" class="section"><h3><a name="one-field-of-field"><tt class="docutils literal">
 <span class="pre">one-field-of-field</span></tt></a></h3>
-<table class="field-list" frame="void" rules="none"><col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field"><th colspan="1" class="field-name">Superclasses:</th><td class="field-body"><tt class="docutils literal">
-<span class="pre">(FIELD)</span></tt></td>
-</tr>
-</tbody>
-</table>
+<p><a class="reference" href="https://github.com/fisxoj/sanity-clause/blob/master/src/field.lisp#L0"><span>[source]</span></a></p>
 <p>A field type that allows any of the fields specified.</p>
-<a id="class-map-field" class="target" name="class-map-field"></a></div>
+<a id="class-map-field" class="target" name="class-map-field"></a><div class="system-message"><p class="system-message-title">System Message: WARN (<tt class="docutils">Duplicate explicit target name: "[source]".</tt>, source line 101)</p>
+</div></div>
 <div id="map-field" class="section"><h3><a name="map-field"><tt class="docutils literal">
 <span class="pre">map-field</span></tt></a></h3>
-<table class="field-list" frame="void" rules="none"><col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field"><th colspan="1" class="field-name">Superclasses:</th><td class="field-body"><tt class="docutils literal">
-<span class="pre">(FIELD)</span></tt></td>
-</tr>
-</tbody>
-</table>
+<p><a class="reference" href="https://github.com/fisxoj/sanity-clause/blob/master/src/field.lisp#L0"><span>[source]</span></a></p>
 <p>A field that maps values of one kind to values to another kind, like strings to strings, or numbers to objects. examples:</p>
 <pre class="literal-block">
 (make-field :map :key-field :string :value-field :integer)
 (deserialize * '(("potato" . 4) ("chimp" . 11)))
 
-</pre><a id="class-nested-field" class="target" name="class-nested-field"></a></div>
+</pre><a id="class-nested-field" class="target" name="class-nested-field"></a><div class="system-message"><p class="system-message-title">System Message: WARN (<tt class="docutils">Duplicate explicit target name: "[source]".</tt>, source line 112)</p>
+</div></div>
 <div id="nested-field" class="section"><h3><a name="nested-field"><tt class="docutils literal">
 <span class="pre">nested-field</span></tt></a></h3>
-<table class="field-list" frame="void" rules="none"><col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field"><th colspan="1" class="field-name">Superclasses:</th><td class="field-body"><tt class="docutils literal">
-<span class="pre">(FIELD</span> <span class="pre">NESTED-ELEMENT)</span></tt></td>
-</tr>
-</tbody>
-</table>
+<p><a class="reference" href="https://github.com/fisxoj/sanity-clause/blob/master/src/field.lisp#L0"><span>[source]</span></a></p>
 <p>A field that represents a complex object located at this slot.</p>
-<a id="class-list-field" class="target" name="class-list-field"></a></div>
+<a id="class-list-field" class="target" name="class-list-field"></a><div class="system-message"><p class="system-message-title">System Message: WARN (<tt class="docutils">Duplicate explicit target name: "[source]".</tt>, source line 127)</p>
+</div></div>
 <div id="list-field" class="section"><h3><a name="list-field"><tt class="docutils literal">
 <span class="pre">list-field</span></tt></a></h3>
-<table class="field-list" frame="void" rules="none"><col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field"><th colspan="1" class="field-name">Superclasses:</th><td class="field-body"><tt class="docutils literal">
-<span class="pre">(FIELD</span> <span class="pre">NESTED-ELEMENT)</span></tt></td>
-</tr>
-</tbody>
-</table>
+<p><a class="reference" href="https://github.com/fisxoj/sanity-clause/blob/master/src/field.lisp#L0"><span>[source]</span></a></p>
 <p>A field that contains a list of values satsified by another field.</p>
-<a id="condition-required-value-error" class="target" name="condition-required-value-error"></a></div>
+<a id="condition-required-value-error" class="target" name="condition-required-value-error"></a><div class="system-message"><p class="system-message-title">System Message: WARN (<tt class="docutils">Duplicate explicit target name: "[source]".</tt>, source line 138)</p>
+</div></div>
 <div id="required-value-error" class="section"><h3><a name="required-value-error"><tt class="docutils literal">
 <span class="pre">required-value-error</span></tt></a></h3>
-<table class="field-list" frame="void" rules="none"><col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field"><th colspan="1" class="field-name">Superclasses:</th><td class="field-body"><tt class="docutils literal">
-<span class="pre">(FIELD-ERROR)</span></tt></td>
-</tr>
-</tbody>
-</table>
+<p><a class="reference" href="https://github.com/fisxoj/sanity-clause/blob/master/src/field.lisp#L0"><span>[source]</span></a></p>
 <p>An error that signals a required value is missing.</p>
-<a id="condition-validation-error" class="target" name="condition-validation-error"></a></div>
+<a id="condition-validation-error" class="target" name="condition-validation-error"></a><div class="system-message"><p class="system-message-title">System Message: WARN (<tt class="docutils">Duplicate explicit target name: "[source]".</tt>, source line 149)</p>
+</div></div>
 <div id="validation-error" class="section"><h3><a name="validation-error"><tt class="docutils literal">
 <span class="pre">validation-error</span></tt></a></h3>
-<table class="field-list" frame="void" rules="none"><col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field"><th colspan="1" class="field-name">Superclasses:</th><td class="field-body"><tt class="docutils literal">
-<span class="pre">(FIELD-ERROR</span> <span class="pre">VALUE-ERROR)</span></tt></td>
-</tr>
-</tbody>
-</table>
+<p><a class="reference" href="https://github.com/fisxoj/sanity-clause/blob/master/src/field.lisp#L0"><span>[source]</span></a></p>
 <p>Error that indicates a field is invalid.</p>
-<a id="class-timestamp-field" class="target" name="class-timestamp-field"></a></div>
+<a id="class-timestamp-field" class="target" name="class-timestamp-field"></a><div class="system-message"><p class="system-message-title">System Message: WARN (<tt class="docutils">Duplicate explicit target name: "[source]".</tt>, source line 160)</p>
+</div></div>
 <div id="timestamp-field" class="section"><h3><a name="timestamp-field"><tt class="docutils literal">
 <span class="pre">timestamp-field</span></tt></a></h3>
-<table class="field-list" frame="void" rules="none"><col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field"><th colspan="1" class="field-name">Superclasses:</th><td class="field-body"><tt class="docutils literal">
-<span class="pre">(FIELD)</span></tt></td>
-</tr>
-</tbody>
-</table>
+<p><a class="reference" href="https://github.com/fisxoj/sanity-clause/blob/master/src/field.lisp#L0"><span>[source]</span></a></p>
 <p>A field that contains a timestamp</p>
-<a id="class-real-field" class="target" name="class-real-field"></a></div>
+<a id="class-real-field" class="target" name="class-real-field"></a><div class="system-message"><p class="system-message-title">System Message: WARN (<tt class="docutils">Duplicate explicit target name: "[source]".</tt>, source line 171)</p>
+</div></div>
 <div id="real-field" class="section"><h3><a name="real-field"><tt class="docutils literal">
 <span class="pre">real-field</span></tt></a></h3>
-<table class="field-list" frame="void" rules="none"><col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field"><th colspan="1" class="field-name">Superclasses:</th><td class="field-body"><tt class="docutils literal">
-<span class="pre">(FIELD)</span></tt></td>
-</tr>
-</tbody>
-</table>
+<p><a class="reference" href="https://github.com/fisxoj/sanity-clause/blob/master/src/field.lisp#L0"><span>[source]</span></a></p>
 <p>A field that contains a real value (eg. possibly a float).</p>
-<a id="class-integer-field" class="target" name="class-integer-field"></a></div>
+<a id="class-integer-field" class="target" name="class-integer-field"></a><div class="system-message"><p class="system-message-title">System Message: WARN (<tt class="docutils">Duplicate explicit target name: "[source]".</tt>, source line 182)</p>
+</div></div>
 <div id="integer-field" class="section"><h3><a name="integer-field"><tt class="docutils literal">
 <span class="pre">integer-field</span></tt></a></h3>
-<table class="field-list" frame="void" rules="none"><col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field"><th colspan="1" class="field-name">Superclasses:</th><td class="field-body"><tt class="docutils literal">
-<span class="pre">(FIELD)</span></tt></td>
-</tr>
-</tbody>
-</table>
+<p><a class="reference" href="https://github.com/fisxoj/sanity-clause/blob/master/src/field.lisp#L0"><span>[source]</span></a></p>
 <p>A field that holds an integer value.</p>
-<a id="class-constant-field" class="target" name="class-constant-field"></a></div>
+<a id="class-constant-field" class="target" name="class-constant-field"></a><div class="system-message"><p class="system-message-title">System Message: WARN (<tt class="docutils">Duplicate explicit target name: "[source]".</tt>, source line 193)</p>
+</div></div>
 <div id="constant-field" class="section"><h3><a name="constant-field"><tt class="docutils literal">
 <span class="pre">constant-field</span></tt></a></h3>
-<table class="field-list" frame="void" rules="none"><col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field"><th colspan="1" class="field-name">Superclasses:</th><td class="field-body"><tt class="docutils literal">
-<span class="pre">(FIELD)</span></tt></td>
-</tr>
-</tbody>
-</table>
-<p>A field that expects to get the same value every time.  Will throw a <a class="reference ref-class" href="sanity-clause.field.html#class__conversion-error"><span class="ref-class">conversion-error</span></a> if VALUE isn't equal to CONSTANT according to TEST.</p>
-<a id="class-uuid-field" class="target" name="class-uuid-field"></a></div>
+<p><a class="reference" href="https://github.com/fisxoj/sanity-clause/blob/master/src/field.lisp#L0"><span>[source]</span></a></p>
+<p>A field that expects to get the same value every time.  Will throw a <a class="reference ref-class" href="sanity-clause.field.html#class-conversion-error"><span class="ref-class">conversion-error</span></a> if VALUE isn't equal to CONSTANT according to TEST.</p>
+<a id="class-uuid-field" class="target" name="class-uuid-field"></a><div class="system-message"><p class="system-message-title">System Message: WARN (<tt class="docutils">Duplicate explicit target name: "[source]".</tt>, source line 204)</p>
+</div></div>
 <div id="uuid-field" class="section"><h3><a name="uuid-field"><tt class="docutils literal">
 <span class="pre">uuid-field</span></tt></a></h3>
-<table class="field-list" frame="void" rules="none"><col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field"><th colspan="1" class="field-name">Superclasses:</th><td class="field-body"><tt class="docutils literal">
-<span class="pre">(STRING-FIELD)</span></tt></td>
-</tr>
-</tbody>
-</table>
+<p><a class="reference" href="https://github.com/fisxoj/sanity-clause/blob/master/src/field.lisp#L0"><span>[source]</span></a></p>
 <p>A field for values that should resemble UUIDs.</p>
-<a id="class-uri-field" class="target" name="class-uri-field"></a></div>
+<a id="class-uri-field" class="target" name="class-uri-field"></a><div class="system-message"><p class="system-message-title">System Message: WARN (<tt class="docutils">Duplicate explicit target name: "[source]".</tt>, source line 215)</p>
+</div></div>
 <div id="uri-field" class="section"><h3><a name="uri-field"><tt class="docutils literal">
 <span class="pre">uri-field</span></tt></a></h3>
-<table class="field-list" frame="void" rules="none"><col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field"><th colspan="1" class="field-name">Superclasses:</th><td class="field-body"><tt class="docutils literal">
-<span class="pre">(STRING-FIELD)</span></tt></td>
-</tr>
-</tbody>
-</table>
+<p><a class="reference" href="https://github.com/fisxoj/sanity-clause/blob/master/src/field.lisp#L0"><span>[source]</span></a></p>
 <p>A field for values that should be emails.</p>
-<a id="class-email-field" class="target" name="class-email-field"></a></div>
+<a id="class-email-field" class="target" name="class-email-field"></a><div class="system-message"><p class="system-message-title">System Message: WARN (<tt class="docutils">Duplicate explicit target name: "[source]".</tt>, source line 226)</p>
+</div></div>
 <div id="email-field" class="section"><h3><a name="email-field"><tt class="docutils literal">
 <span class="pre">email-field</span></tt></a></h3>
-<table class="field-list" frame="void" rules="none"><col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field"><th colspan="1" class="field-name">Superclasses:</th><td class="field-body"><tt class="docutils literal">
-<span class="pre">(STRING-FIELD)</span></tt></td>
-</tr>
-</tbody>
-</table>
+<p><a class="reference" href="https://github.com/fisxoj/sanity-clause/blob/master/src/field.lisp#L0"><span>[source]</span></a></p>
 <p>A field for values that should be emails.</p>
-<a id="class-boolean-field" class="target" name="class-boolean-field"></a></div>
+<a id="class-boolean-field" class="target" name="class-boolean-field"></a><div class="system-message"><p class="system-message-title">System Message: WARN (<tt class="docutils">Duplicate explicit target name: "[source]".</tt>, source line 237)</p>
+</div></div>
 <div id="boolean-field" class="section"><h3><a name="boolean-field"><tt class="docutils literal">
 <span class="pre">boolean-field</span></tt></a></h3>
-<table class="field-list" frame="void" rules="none"><col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field"><th colspan="1" class="field-name">Superclasses:</th><td class="field-body"><tt class="docutils literal">
-<span class="pre">(FIELD)</span></tt></td>
-</tr>
-</tbody>
-</table>
+<p><a class="reference" href="https://github.com/fisxoj/sanity-clause/blob/master/src/field.lisp#L0"><span>[source]</span></a></p>
 <p>A field type for bolean values.</p>
-<a id="class-member-field" class="target" name="class-member-field"></a></div>
+<a id="class-member-field" class="target" name="class-member-field"></a><div class="system-message"><p class="system-message-title">System Message: WARN (<tt class="docutils">Duplicate explicit target name: "[source]".</tt>, source line 248)</p>
+</div></div>
 <div id="member-field" class="section"><h3><a name="member-field"><tt class="docutils literal">
 <span class="pre">member-field</span></tt></a></h3>
-<table class="field-list" frame="void" rules="none"><col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field"><th colspan="1" class="field-name">Superclasses:</th><td class="field-body"><tt class="docutils literal">
-<span class="pre">(FIELD)</span></tt></td>
-</tr>
-</tbody>
-</table>
+<p><a class="reference" href="https://github.com/fisxoj/sanity-clause/blob/master/src/field.lisp#L0"><span>[source]</span></a></p>
 <p>A field that expects a member of a set of symbols.</p>
-<a id="class-string-field" class="target" name="class-string-field"></a></div>
+<a id="class-string-field" class="target" name="class-string-field"></a><div class="system-message"><p class="system-message-title">System Message: WARN (<tt class="docutils">Duplicate explicit target name: "[source]".</tt>, source line 259)</p>
+</div></div>
 <div id="string-field" class="section"><h3><a name="string-field"><tt class="docutils literal">
 <span class="pre">string-field</span></tt></a></h3>
-<table class="field-list" frame="void" rules="none"><col class="field-name" />
-<col class="field-body" />
-<tbody valign="top">
-<tr class="field"><th colspan="1" class="field-name">Superclasses:</th><td class="field-body"><tt class="docutils literal">
-<span class="pre">(FIELD)</span></tt></td>
-</tr>
-</tbody>
-</table>
+<p><a class="reference" href="https://github.com/fisxoj/sanity-clause/blob/master/src/field.lisp#L0"><span>[source]</span></a></p>
 <p>A field that contains a string.</p>
-<a id="class-field" class="target" name="class-field"></a></div>
+<a id="class-field" class="target" name="class-field"></a><div class="system-message"><p class="system-message-title">System Message: WARN (<tt class="docutils">Duplicate explicit target name: "[source]".</tt>, source line 270)</p>
+</div></div>
 <div id="field" class="section"><h3><a name="field"><tt class="docutils literal">
 <span class="pre">field</span></tt></a></h3>
+<p><a class="reference" href="https://github.com/fisxoj/sanity-clause/blob/master/src/field.lisp#L0"><span>[source]</span></a></p>
 <p>A base class for all fields that controls how they are (de?)serialized.</p>
+<div class="system-message"><p class="system-message-title">System Message: WARN (<tt class="docutils">Duplicate explicit target name: "[source]".</tt>, source line 281)</p>
+</div></div>
 </div>
-</div>
-<hr class ="docutils footer" /><div class="footer">Generated on : Wed, 22 Jan 2020 05:31:29 .
+<hr class ="docutils footer" /><div class="footer">Generated on : Sat, 04 Apr 2020 03:42:41 .
 </div>
 </div>
 </body>

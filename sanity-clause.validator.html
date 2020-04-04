@@ -16,26 +16,22 @@
 <div id="functions" class="section"><h2><a name="functions">Functions</a></h2>
 <a id="function-not-empty" class="target" name="function-not-empty"></a><div id="not-empty" class="section"><h3><a name="not-empty"><tt class="docutils literal">
 <span class="pre">not-empty</span></tt></a></h3>
-<p><tt class="docutils literal">
-<span class="pre">(VALUE)</span></tt></p>
+<p><a class="reference" href="https://github.com/fisxoj/sanity-clause/blob/master/src/validator.lisp#L122"><span>[source]</span></a></p>
 <p>Checks that some value has been supplied.  Note: this won't work well with boolean values because NIL is falsey.</p>
 <a id="function-uuid" class="target" name="function-uuid"></a></div>
 <div id="uuid" class="section"><h3><a name="uuid"><tt class="docutils literal">
 <span class="pre">uuid</span></tt></a></h3>
-<p><tt class="docutils literal">
-<span class="pre">(VALUE)</span></tt></p>
+<p><a class="reference" href="https://github.com/fisxoj/sanity-clause/blob/master/src/validator.lisp#L106"><span>[source]</span></a></p>
 <p>Checks that a value is a string that resembles a uuid.</p>
 <a id="function-email" class="target" name="function-email"></a></div>
 <div id="email" class="section"><h3><a name="email"><tt class="docutils literal">
 <span class="pre">email</span></tt></a></h3>
-<p><tt class="docutils literal">
-<span class="pre">(VALUE)</span></tt></p>
+<p><a class="reference" href="https://github.com/fisxoj/sanity-clause/blob/master/src/validator.lisp#L98"><span>[source]</span></a></p>
 <p>Checks that the input resembles an email.</p>
 <a id="function-str" class="target" name="function-str"></a></div>
 <div id="str" class="section"><h3><a name="str"><tt class="docutils literal">
 <span class="pre">str</span></tt></a></h3>
-<p><tt class="docutils literal">
-<span class="pre">(VALUE</span> <span class="pre">&amp;KEY</span> <span class="pre">MIN-LENGTH</span> <span class="pre">MAX-LENGTH)</span></tt></p>
+<p><a class="reference" href="https://github.com/fisxoj/sanity-clause/blob/master/src/validator.lisp#L79"><span>[source]</span></a></p>
 <p>Checks that <tt class="docutils literal param">
 <span class="pre">value</span></tt> is a string. If specified, checks that <tt class="docutils literal param">
 <span class="pre">min-length</span></tt> &lt;= <tt class="docutils literal">
@@ -44,8 +40,7 @@
 <a id="function-int" class="target" name="function-int"></a></div>
 <div id="int" class="section"><h3><a name="int"><tt class="docutils literal">
 <span class="pre">int</span></tt></a></h3>
-<p><tt class="docutils literal">
-<span class="pre">(VALUE</span> <span class="pre">&amp;KEY</span> <span class="pre">(RADIX</span> <span class="pre">10)</span> <span class="pre">MAX</span> <span class="pre">MIN)</span></tt></p>
+<p><a class="reference" href="https://github.com/fisxoj/sanity-clause/blob/master/src/validator.lisp#L46"><span>[source]</span></a></p>
 <p>Accepts a <tt class="docutils literal param">
 <span class="pre">value</span></tt> as an integer or string. If <tt class="docutils literal param">
 <span class="pre">value</span></tt> is a string, interpret it as a value with base- <tt class="docutils literal param">
@@ -56,18 +51,16 @@
 <a id="function-hydrate-validators" class="target" name="function-hydrate-validators"></a></div>
 <div id="hydrate-validators" class="section"><h3><a name="hydrate-validators"><tt class="docutils literal">
 <span class="pre">hydrate-validators</span></tt></a></h3>
-<p><tt class="docutils literal">
-<span class="pre">(SPEC-PLIST)</span></tt></p>
+<p><a class="reference" href="https://github.com/fisxoj/sanity-clause/blob/master/src/validator.lisp#L34"><span>[source]</span></a></p>
 <p>Takes a list of validators in the form of keywords and turns them into living function references.</p>
 <a id="function-ensure-validator" class="target" name="function-ensure-validator"></a></div>
 <div id="ensure-validator" class="section"><h3><a name="ensure-validator"><tt class="docutils literal">
 <span class="pre">ensure-validator</span></tt></a></h3>
-<p><tt class="docutils literal">
-<span class="pre">(KEYWORD-SPEC)</span></tt></p>
+<p><a class="reference" href="https://github.com/fisxoj/sanity-clause/blob/master/src/validator.lisp#L20"><span>[source]</span></a></p>
 <p>Find a validator function by keyword-spec and return the function represented by the spec unless it's already a function.</p>
 </div>
 </div>
-<hr class ="docutils footer" /><div class="footer">Generated on : Wed, 22 Jan 2020 05:31:29 .
+<hr class ="docutils footer" /><div class="footer">Generated on : Sat, 04 Apr 2020 03:42:41 .
 </div>
 </div>
 </body>
