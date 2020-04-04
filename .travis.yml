@@ -62,9 +62,9 @@ jobs:
     - name: update docs
       stage: deploy
       before_script:
-        - docker pull quay.io/fisxoj/coo:v1
+        - docker pull quay.io/fisxoj/coo:latest
       script:
-        - docker run --rm -it -v $PWD:/work:Z quay.io/fisxoj/coo:v1
+        - docker run --rm -it -v $PWD:/work:Z quay.io/fisxoj/coo:latest
       deploy:
         provider: pages:git
         edge: true
