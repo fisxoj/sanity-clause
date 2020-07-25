@@ -118,7 +118,8 @@ In the event the type isn't a simple type, assume it's a class with metaclass :c
       ;; Try to set data-key based on an initarg
       ;; FIXME: probably better to be smart about which initarg we use
       ;; or possibly refactor to allow many possible data sources.
-      (let* ((data-key (first (getf initargs :initargs)))
+      (let* ((data-key (or (first (getf initargs :initargs))
+                           (string-downcase (getf initargs :name))))
              (field (apply #'sanity-clause.field:make-field
                             field-class
                             (list* :data-key (getf initargs :data-key data-key)
