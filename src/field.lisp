@@ -518,11 +518,16 @@ examples::
     (let (accumulator
           (value (sanity-clause.protocol:get-value field data)))
 
-      (with-slots (key-field value-field) field
-        (sanity-clause.util:do-key-values (k v) value
-          (push (cons (deserialize-and-validate key-field k)
-                      (deserialize-and-validate value-field v))
-                accumulator)))
+      (typecase value
+        (missing
+         (return-from sanity-clause.protocol:resolve value))
+
+        (t
+         (with-slots (key-field value-field) field
+           (sanity-clause.util:do-key-values (k v) value
+             (push (cons (deserialize-and-validate key-field k)
+                         (deserialize-and-validate value-field v))
+                   accumulator)))))
       accumulator)))
 
 
