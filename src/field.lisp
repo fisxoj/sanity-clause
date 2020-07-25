@@ -182,10 +182,14 @@ Also contains :function:`sanity-clause.protocol:get-value`, :function:`sanity-cl
 (defun find-field (type)
   "Find the class that corresponds to :param:`type` by name"
 
-  (if-let ((class (find-class (find-symbol (concatenate 'string (string-upcase type) "-FIELD")
-                                           (find-package :sanity-clause.field)))))
-    class
-    (error "No field class named ~@(~A~)-FIELD" type)))
+  (let ((inferred-class-name (find-symbol (concatenate 'string (string-upcase type) "-FIELD")
+                                          (find-package :sanity-clause.field))))
+    (if-let ((class (find-class inferred-class-name nil)))
+      class
+      (if-let ((class (find-class type)))
+        ;; if it's a class from a different package, that's fine, too
+        class
+        (error "No field class named ~@(~A~)-FIELD" type)))))
 
 
 (defun make-field (type &rest args)
