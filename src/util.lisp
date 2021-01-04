@@ -1,6 +1,6 @@
 (defpackage sanity-clause.util
   (:use #:cl
-	#:cl-arrows
+	#:arrows
 	#:alexandria)
   (:export #:get-value
            #:do-key-values))

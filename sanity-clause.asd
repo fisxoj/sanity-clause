@@ -4,7 +4,7 @@
   :version "0.7.3"
   :homepage "https://fisxoj.github.io/sanity-clause/"
   :depends-on ("alexandria"
-               "cl-arrows"
+               "arrows"
                "cl-ppcre"
                "closer-mop"
                "local-time"
