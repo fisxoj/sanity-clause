@@ -1,7 +1,7 @@
 (defpackage sanity-clause.field
   (:use #:cl
 	#:alexandria
-	#:cl-arrows)
+	#:arrows)
   (:export #:field
            #:validation-error
 

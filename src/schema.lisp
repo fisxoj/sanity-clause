@@ -1,7 +1,7 @@
 (defpackage :sanity-clause.schema
   (:use #:cl
         #:alexandria
-        #:cl-arrows)
+        #:arrows)
   (:export #:validated-metaclass)
   (:documentation "The :class:`validated-metaclass` is a way of defining classes that have contracts enforced for them.
 

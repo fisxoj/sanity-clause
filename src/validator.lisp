@@ -1,6 +1,6 @@
 (defpackage sanity-clause.validator
   (:use #:cl
-        #:cl-arrows
+        #:arrows
 	#:alexandria)
   (:shadow #:real)
   (:export #:str

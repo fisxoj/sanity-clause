@@ -3,7 +3,7 @@
 	#:rove
 	#:sanity-clause.field
         #:alexandria
-        #:cl-arrows))
+        #:arrows))
 
 (in-package #:sanity-clause/test.field)
 
