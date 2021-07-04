@@ -1,0 +1,66 @@
+name: Test
+on: [push]
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        implementation:
+          - sbcl
+          - ccl
+          # - ecl
+          # - abcl
+        test-package:
+          - sanity-clause/test
+    name: ${{ matrix.implementation }}
+    container: clfoundation/cl-devel:2021-06-01
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      JUNIT_ENABLED: 1
+      JUNIT_REPORT_FILENAME: /home/cl/report.xml
+      CL_SOURCE_REGISTRY: (:source-registry (:tree "/__w/") :inherit-configuration)
+      # So actions run here instead of the /__w/ directory, which belongs to a magical github user
+      HOME: /home/cl
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Kludge so the cache works
+        run: sudo chmod ogu+rw -R /__w/_temp
+      - name: Cache compiled files
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cache/common-lisp
+            ~/quicklisp/dists
+          key: "${{ hashFiles('**.asd') }}-${{ matrix.implementation}}-v1"
+          restore-keys: ${{ hashFiles('**.asd') }}-
+        env:
+          RUNNER_TEMP: /tmp
+      - name: Install dependencies
+        run: cl-launch -l ${{ matrix.implementation }} -Q '(ql:quickload :${{ matrix.test-package }})'
+      - name: Run tests
+        run: cl-launch -l ${{ matrix.implementation }} -Q '(asdf:test-system :${{ matrix.test-package }})'
+      - name: Publish Results
+        uses: mikepenz/action-junit-report@v2
+        if: always()
+        with:
+          report_paths: '/home/cl/report.xml'
+          check_name: "${{ matrix.implementation }} Test Report"
+
+  generate-docs:
+    needs: test
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/master' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v1
+      - name: Generate Docs
+        run: |
+          docker pull quay.io/fisxoj/coo:latest
+          docker run --rm -v $PWD:/work:Z quay.io/fisxoj/coo:latest
+      - name: Publish
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./docs
