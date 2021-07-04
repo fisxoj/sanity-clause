@@ -1,6 +1,6 @@
-.. image:: https://travis-ci.org/fisxoj/sanity-clause.svg?branch=master
+.. image:: https://github.com/fisxoj/sanity-clause/actions/workflows/test.yml/badge.svg
    :target: https://travis-ci.org/fisxoj/sanity-clause
-   :alt: Travis CI status badge
+   :alt: Github Actions CI status badge
 .. image:: https://coveralls.io/repos/github/fisxoj/sanity-clause/badge.svg?branch=master
    :target: https://coveralls.io/github/fisxoj/sanity-clause?branch=master
    :alt: Coveralls status badge
