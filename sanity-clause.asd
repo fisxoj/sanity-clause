@@ -29,13 +29,14 @@
   :depends-on ("sanity-clause"
 	       "rove")
   :pathname "t"
-  :components ((:file "util")
+  :components ((:file "rove-junit-reporter")
+               (:file "util")
 	       (:file "field")
                (:file "loadable-schema")
                (:file "schema"))
   :perform (test-op (op c)
                     (declare (ignore op))
-		    (uiop:symbol-call :rove :run c
+		    (uiop:symbol-call :rove/reporter/junit :run c
 			     :env '(("VALUE" . "2")
 				    ("POTATO" . "YAM")
 				    ("AGE" . "11")
