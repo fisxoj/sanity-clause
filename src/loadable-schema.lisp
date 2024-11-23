@@ -29,9 +29,9 @@ and returns a schema plist with fields.  The field names are transformed into th
 
   (typecase schema
     (pathname (load-schema (uiop:with-safe-io-syntax () (uiop:read-file-form schema))))
-    (cons (loop for (key (type . spec)) on schema by #'cddr
-                appending (list key
-                                (apply #'sanity-clause.field:make-field
-                                       type
-                                       (append (list :data-key (funcall data-key-transformer key))
+    (cons (loop :for (key (type . spec)) :on schema :by #'cddr
+                :appending (list key
+                                 (apply #'sanity-clause.field:make-field
+                                        type
+                                        (list* :data-key (funcall data-key-transformer key)
                                                (sanity-clause.validator:hydrate-validators (copy-list spec)))))))))
