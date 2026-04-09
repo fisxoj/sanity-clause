@@ -43,8 +43,8 @@ Some special types can be specifed with lisp type specs, like ``age`` above, whi
 
   (->
    (loop
-     for slot in (c2mop:class-slots class)
-     collecting (c2mop:slot-definition-initargs slot))
+     :for slot :in (c2mop:class-slots class)
+     :collecting (c2mop:slot-definition-initargs slot))
    alexandria:flatten))
 
 
@@ -65,8 +65,8 @@ Some special types can be specifed with lisp type specs, like ``age`` above, whi
 
   (multiple-value-bind (take1 others1) (take-properties keys list1)
     (multiple-value-bind (take2 others2) (take-properties keys list2)
-      (append (loop for key in keys
-                    appending (list key (append (getf take1 key) (getf take2 key))))
+      (append (loop :for key :in keys
+                    :appending (list key (append (getf take1 key) (getf take2 key))))
               others1
               others2))))
 
@@ -229,16 +229,15 @@ In the event the type isn't a simple type, assume it's a class with metaclass :c
 ;;; Implementations of the load method for lists or metaclasses
 
 (defmethod sanity-clause.protocol:load ((schema list) data &optional format)
-    (declare (ignore format))
+  (declare (ignore format))
 
-    (loop
-      for (marker field) on schema by #'cddr
+  (loop :for (marker field) :on schema :by #'cddr
 
-      unless (sanity-clause.field:data-key-of field)
-        do (setf (sanity-clause.field:data-key-of field) marker)
+        :unless (sanity-clause.field:data-key-of field)
+          :do (setf (sanity-clause.field:data-key-of field) marker)
 
-      when (sanity-clause.field:load-field-p field)
-        appending (list marker (sanity-clause.protocol:resolve field data (list schema)))))
+        :when (sanity-clause.field:load-field-p field)
+          :appending (list marker (sanity-clause.protocol:resolve field data (list schema)))))
 
 
 (defmethod sanity-clause.protocol:load ((symbol symbol) data &optional format)
@@ -261,14 +260,14 @@ In the event the type isn't a simple type, assume it's a class with metaclass :c
 
 (defmethod sanity-clause.protocol:dump ((schema list) (data list) &optional format)
   (loop
-    for (marker field) on schema by #'cddr
-    for value = (getf data marker)
-    for field-name = (or (sanity-clause.field:attribute-of field)
-                         (string marker))
+    :for (marker field) on schema by #'cddr
+    :for value := (getf data marker)
+    :for field-name := (or (sanity-clause.field:attribute-of field)
+                           (string marker))
 
-    when (sanity-clause.field:dump-field-p field)
-      do (sanity-clause.protocol:validate field value)
-      and if (eq format :alist)
-            collect (cons field-name value)
-    else
-      append (list field-name value)))
+    :when (sanity-clause.field:dump-field-p field)
+      :do (sanity-clause.protocol:validate field value)
+      :and :if (eq format :alist)
+             :collect (cons field-name value)
+    :else
+      :append (list field-name value)))

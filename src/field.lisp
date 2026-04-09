@@ -144,9 +144,9 @@ Also contains :function:`sanity-clause.protocol:get-value`, :function:`sanity-cl
 
 (defmethod sanity-clause.protocol:validate ((field field) value)
   (when-let ((errors (->> (loop
-                            for validator in (all-validators field)
+                            :for validator :in (all-validators field)
 
-                            collecting (funcall validator value))
+                            :collecting (funcall validator value))
                           (remove-if #'null))))
 
     (error 'validation-error :error-messages errors
