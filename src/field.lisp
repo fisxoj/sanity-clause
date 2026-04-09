@@ -464,6 +464,9 @@ Also contains :function:`sanity-clause.protocol:get-value`, :function:`sanity-cl
                   value)))
          (mapcar #'load-element value))))
 
+    (string
+     (sanity-clause.protocol:deserialize field (str:split #\, value)))
+
     (sequence
      (sanity-clause.protocol:deserialize field (coerce value 'list)))))
 

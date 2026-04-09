@@ -369,3 +369,18 @@ E.g. (let ((string-field (make-field 'string))
 
       (ok (signals (sanity-clause.protocol:resolve field (list :data (local-time:now))) 'sanity-clause.field:conversion-error)
           "signals an error for a datetime."))))
+
+
+(deftest test-list-field
+  (defclass ingredient-list ()
+    ((ingredients :field-type list
+                  :element-type (:string)))
+    (:metaclass sanity-clause:validated-metaclass))
+
+  (let ((field (make-field :list :element-type '(:string)))
+        (data "red pepper,broccoli,salt"))
+    ;; (ok (make-instance 'ingredient-list 'sanity-clause.schema::data `(("ingredients" ,data))))
+
+    (ok (= (length (sanity-clause:deserialize field data))
+           3)
+        "Parses a comma-separated string into a list")))
