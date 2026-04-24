@@ -334,8 +334,12 @@ Also contains :function:`sanity-clause.protocol:get-value`, :function:`sanity-cl
   (:documentation "A field that contains a timestamp"))
 
 
-(defmethod sanity-clause.protocol:deserialize ((field timestamp-field) value)
+(defmethod sanity-clause.protocol:deserialize ((field timestamp-field) (value string))
   (local-time:parse-timestring value))
+
+
+(defmethod sanity-clause.protocol:deserialize ((field timestamp-field) (value local-time:timestamp))
+  value)
 
 
 (define-condition field-error (error)
