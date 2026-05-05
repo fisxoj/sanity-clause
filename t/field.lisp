@@ -142,6 +142,10 @@ E.g. (let ((string-field (make-field 'string))
       (ok (typep (sanity-clause.protocol:deserialize timestamp-field "2006-06-06TZ") 'local-time:timestamp)
 	  "converts values to timestamps from LOCAL-TIME.")
 
+      (ok (typep (sanity-clause.protocol:deserialize timestamp-field (local-time:now))
+                 'local-time:timestamp)
+	  "accepts values that are already LOCAL-TIME:TIMESTAMP s.")
+
       (ok (signals (sanity-clause.protocol:deserialize timestamp-field "pizza") 'conversion-error)
 	  "throws a conversion error on badly formatted timestamp."))))
 
