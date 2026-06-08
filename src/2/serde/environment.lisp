@@ -50,7 +50,7 @@
           :else
             :do (let* ((env-var (str:join separator (append (sanity-clause-2::current-path) (list (kebab-to-shouting-snake (string slot-name))))))
                        (value (uiop:getenv env-var)))
-                  (beaver:info slot-name value env-var "Deserializing slot")
+
                   (setf (closer-mop:slot-value-using-class class instance slot) (deserialize-value serde field value))))
 
     (values instance)))
