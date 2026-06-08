@@ -1,6 +1,7 @@
 (defsystem sanity-clause-2
   :pathname "src/2/"
-  :depends-on ("trivia")
+  :depends-on ("str"
+               "trivia")
   :components ((:file "package")
                (:module "serde"
                 :components ((:file "package")
