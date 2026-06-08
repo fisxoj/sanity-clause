@@ -16,6 +16,7 @@
 
 (define-test infer-field-type
   :serial nil
+  :parent class-definition
 
   (of-type put::integer-field (put::infer-field-type '(integer 0 3)))
   (of-type put::integer-field (put::infer-field-type 'integer)))
@@ -24,3 +25,17 @@
 (define-test validate-initargs
   (parachute:fail (make-instance 'dog :age -2)
       'put::validation-error))
+
+(defclass widget ()
+  ((price :type (or float string)
+          :initarg :price))
+  (:metaclass sanity-clause-2:metaclass))
+
+
+(define-test or-field
+  (parachute:finish (make-instance 'widget :price 3.0d0))
+
+  (parachute:finish (make-instance 'widget :price "infinity"))
+
+  (parachute:fail (make-instance 'widget :price t)
+      'sanity-clause-2::or-validation-error))

@@ -191,6 +191,64 @@
                              :condition (format nil "be of type ~A" (forward-referenced-class field)))))
 
 
+(define-field float (field)
+  ((maximum :type (or null float)
+            :initarg :maximum
+            :reader maximum)
+   (minimum :type (or null float)
+            :initarg :minimum
+            :reader minimum)))
+
+
+(defmethod validate ((field float-field) value)
+  (unless (typep value 'float)
+    (error 'validation-error :value value
+                             :condition "be of type float"))
+
+  (when (maximum field)
+    (unless (<= value (maximum field))
+      (error 'validation-error :value value
+                               :condition (format nil "be less than or equal to ~d" (maximum field)))))
+
+  (when (minimum field)
+    (unless (>= value (minimum field))
+      (error 'validation-error :value value
+                               :condition (format nil "be greater than or equal to ~d" (minimum field))))))
+
+
+(define-field or (field)
+  ((alternatives :type list
+                 :initarg :alternatives
+                 :reader alternatives)))
+
+
+(defmethod shared-initialize ((field or-field) slot-names &rest initargs &key alternatives &allow-other-keys)
+  (apply #'call-next-method field slot-names initargs)
+
+  (setf (slot-value field 'alternatives)
+        (mapcar #'make-field alternatives)))
+
+
+(define-condition or-validation-error (validation-error)
+  ((failed-validations :initarg :failed-validations))
+  (:report (lambda (c s)
+             (with-slots (failed-validations value) c
+               (format s "value ~a must satisfy any of the following conditions, but did not:~%~{* ~a~%~}" value failed-validations)))))
+
+
+(defmethod validate ((field or-field) value)
+  (loop :with failed-validations := nil
+        :for sub-field :in (alternatives field)
+
+        ;; If ANY validation succeeds, return from the method,
+        ;; otherwise collect the errors and return them.
+        :do (handler-case (progn (validate sub-field value)
+                                 (return-from validate))
+              (validation-error (e) (push e failed-validations)))
+        :finally (error 'or-validation-error :value value
+                                             :failed-validations failed-validations)))
+
+
 (defun infer-field-type (type)
   (trivia:match type
     ((list* head rest)
@@ -212,6 +270,11 @@
         (make-field 'integer :minimum (unless (eq minimum '*) minimum)
                              :maximum (unless (eq maximum '*) maximum))))
 
+  (:method ((head (eql 'float)) &rest rest)
+    (destructuring-bind (&optional (minimum '*) (maximum '*)) rest
+      (make-field 'float :minimum (unless (eq minimum '*) minimum)
+                         :maximum (unless (eq maximum '*) maximum))))
+
   (:method ((head (eql 'string)) &rest rest)
     (destructuring-bind (&optional (length '*)) rest
       (make-field 'string :length (unless (eq length '*) length))))
@@ -226,23 +289,41 @@
 
     (make-instance 'forward-reference-field :class head))
 
+  (:method ((head (eql 'or)) &rest alternatives)
+    (make-field 'or :alternatives (mapcar #'infer-field-type alternatives)))
+
   (:documentation "Attempts to create a field from a valid lisp typespec.  Any field that can't be represented this way should be constructed using the :field initarg instead of the :type initarg to a slot."))
 
 
-(defmethod shared-initialize ((slot validated-slot-mixin) slot-names &rest initargs &key field type (serialize t serialize-present) (deserialize t deserialize-present) (serde nil serde-present) &allow-other-keys)
-  (declare (ignore initargs))
+(defmethod shared-initialize ((slot validated-slot-mixin)
+                              slot-names
+                              &rest
+                                initargs
+                              &key
+                                field
+                                type
+                                (serialize t serialize-present)
+                                (deserialize t deserialize-present)
+                                (serde nil serde-present)
+                                (required t required-present)
+                              &allow-other-keys)
+
+  (assert (not (and type field)) (type field) "Don't specify values for both :type and :field on a validated slot.  Received ~a for :type and ~a for :field" type field)
+
+  ;; Set initargs and other things but without our initargs for fields
+  (apply #'call-next-method slot slot-names :type type initargs)
 
   (let ((field (if field
                    (if (consp field)
-                       (funcall #'make-field field :serialize serialize :deserialize deserialize :serde serde)
+                       (apply #'make-field
+                              (car field)
+                              :serialize serialize
+                              :deserialize deserialize
+                              :serde serde
+                              (cdr field))
                        (make-field field))
                    (infer-field-type type))))
 
-
-
-    ;; FIXME: Because the field is a slot in the slot, we need to pass
-    ;; some things that masquerade as slot initargs down to the field
-    ;; here.
     (setf (slot-value slot 'field) field)
 
     (when serde-present
@@ -254,16 +335,17 @@
     (when serialize-present
       (setf (slot-value field 'serialize) serialize))
 
-    (when deserialize-present
-      (slot-value field 'deserialize) deserialize))
+    (when required-present
+      (setf (slot-value field 'required) required))
 
-  (call-next-method))
+    (when deserialize-present
+      (slot-value field 'deserialize) deserialize)))
 
 
 (defmethod c2mop:compute-effective-slot-definition :around ((class metaclass) name direct-slot-definitions)
 
   ;; Make sure we set the field to the one defined on the most-specific (left-most)
-  ;; direct slot definiton inherited by this class.
+  ;; direct slot definition inherited by this class.
   (let ((effective-slot (call-next-method)))
 
     (setf (field effective-slot) (some #'field direct-slot-definitions))

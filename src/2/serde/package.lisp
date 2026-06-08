@@ -3,7 +3,8 @@
   (:export
    #:serializable-metaclass
    #:serialize
-   #:deserialize))
+   #:deserialize
+   #:deserialize-value))
 
 (in-package :sanity-clause-2/serde)
 
