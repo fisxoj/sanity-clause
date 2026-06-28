@@ -52,3 +52,10 @@
 
 (defgeneric deserialize (serde class)
   (:documentation "Each serde instance should be able to define this method."))
+
+
+(defgeneric slot-key (serde slot)
+  (:method ((serde t) (slot sanity-clause-2::validated-slot-mixin))
+    (sanity-clause-2::get-serde-option (sanity-clause-2::field slot)
+                                       (alexandria:make-keyword (class-name (class-of serde)))
+                                       :key)))

@@ -32,6 +32,11 @@
   (parse-integer value))
 
 
+(defmethod slot-key ((serde environment) (slot sanity-clause-2::validated-slot-mixin))
+  (or (call-next-method)
+      (kebab-to-shouting-snake (string (closer-mop:slot-definition-name slot)))))
+
+
 (defmethod deserialize ((serde environment) class)
   (let* ((instance (make-instance class))
          (class (if (typep class 'symbol) (find-class class) class))
@@ -43,14 +48,12 @@
 
           :when  (sanity-clause-2:deserialize-p field)
             :if (typep field 'sanity-clause-2::forward-reference-field)
-              :do (sanity-clause-2::with-path ((or (sanity-clause-2::get-serde-option field :environment :key)
-                                                   (string slot-name)))
+              :do (sanity-clause-2::with-path ((slot-key serde slot))
                     (setf (closer-mop:slot-value-using-class class instance slot)
                           (deserialize-value serde field (deserialize serde (closer-mop:slot-definition-type slot)))))
           :else
-            :do (let* ((env-var (str:join separator (append (sanity-clause-2::current-path) (list (kebab-to-shouting-snake (string slot-name))))))
+            :do (let* ((env-var (str:join separator (append (sanity-clause-2::current-path) (list (slot-key serde slot)))))
                        (value (uiop:getenv env-var)))
-
                   (setf (closer-mop:slot-value-using-class class instance slot) (deserialize-value serde field value))))
 
     (values instance)))
