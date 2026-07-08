@@ -2,6 +2,7 @@
   :pathname "src/2/"
   :depends-on ("str"
                "trivia")
+  :version "0.0.1"
   :components ((:file "package")
                (:module "serde"
                 :components ((:file "package")
