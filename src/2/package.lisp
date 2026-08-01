@@ -114,10 +114,12 @@
 (define-field integer (field)
   ((maximum :type (or null integer)
             :initarg :maximum
-            :reader maximum)
+            :reader maximum
+            :initform nil)
    (minimum :type (or null integer)
             :initarg :minimum
-            :reader minimum)))
+            :reader minimum
+            :initform nil)))
 
 
 (define-condition validation-error ()
