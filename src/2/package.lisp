@@ -251,6 +251,39 @@
                                              :failed-validations failed-validations)))
 
 
+(define-field list (field)
+  ((element-type :initarg :element-type
+                 :reader element-type)))
+
+
+(defmethod shared-initialize ((field list-field) slot-names &rest initargs &key element-type)
+  (apply #'call-next-method field slot-names initargs)
+
+  (setf (slot-value field 'element-type) (apply #'make-field element-type)))
+
+
+(define-condition list-validation-error (validation-error)
+  ((failed-validation :initarg :failed-validation)
+   (index :initarg :index))
+  (:report (lambda (c s)
+             (with-slots (failed-validation value index) c
+               (format s "value ~a at index ~d must satisfy the following condition, but did not: ~a" value index failed-validation)))))
+
+
+(defmethod validate ((field list-field) values)
+  (unless (typep values 'list)
+    (error 'validation-error :condition "be a sequence" :value values))
+
+  (loop :for value :in values
+        :for index :from 0 :by 1
+
+        :do (handler-case (validate (slot-value field 'element-type) value)
+              (validation-error (e)
+                (error 'list-validation-error :failed-validation e
+                                              :condition "be valid for the element-type"
+                                              :index index) ))))
+
+
 (defun infer-field-type (type)
   (trivia:match type
     ((list* head rest)
