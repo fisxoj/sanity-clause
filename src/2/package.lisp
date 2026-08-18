@@ -284,6 +284,15 @@
                                               :index index) ))))
 
 
+(define-field null (field)
+  ())
+
+
+(defmethod validate ((field null-field) value)
+  (unless (null value)
+    (error 'validation-error :condition "be null" :value value)))
+
+
 (defun infer-field-type (type)
   (trivia:match type
     ((list* head rest)
@@ -325,7 +334,12 @@
     (make-instance 'forward-reference-field :class head))
 
   (:method ((head (eql 'or)) &rest alternatives)
-    (make-field 'or :alternatives (mapcar #'infer-field-type alternatives)))
+    (make-field 'or :alternatives alternatives))
+
+  (:method ((head (eql 'null)) &rest rest)
+    (declare (ignore rest))
+
+    (make-field 'null))
 
   (:documentation "Attempts to create a field from a valid lisp typespec.  Any field that can't be represented this way should be constructed using the :field initarg instead of the :type initarg to a slot."))
 
