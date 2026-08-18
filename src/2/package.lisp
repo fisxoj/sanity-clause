@@ -249,12 +249,6 @@
                  :reader element-type)))
 
 
-(defmethod shared-initialize ((field list-field) slot-names &rest initargs &key element-type)
-  (apply #'call-next-method field slot-names initargs)
-
-  (setf (slot-value field 'element-type) (apply #'make-field element-type)))
-
-
 (define-condition list-validation-error (validation-error)
   ((failed-validation :initarg :failed-validation)
    (index :initarg :index))
@@ -333,6 +327,10 @@
     (declare (ignore rest))
 
     (make-field 'null))
+
+  (:method ((head (eql 'list)) &rest rest)
+
+    (make-field 'list :element-type (apply 'field-from-typespec rest)))
 
   (:documentation "Attempts to create a field from a valid lisp typespec.  Any field that can't be represented this way should be constructed using the :field initarg instead of the :type initarg to a slot."))
 
