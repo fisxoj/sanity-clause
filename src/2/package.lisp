@@ -224,13 +224,6 @@
                  :reader alternatives)))
 
 
-(defmethod shared-initialize ((field or-field) slot-names &rest initargs &key alternatives &allow-other-keys)
-  (apply #'call-next-method field slot-names initargs)
-
-  (setf (slot-value field 'alternatives)
-        (mapcar #'make-field alternatives)))
-
-
 (define-condition or-validation-error (validation-error)
   ((failed-validations :initarg :failed-validations))
   (:report (lambda (c s)
@@ -334,7 +327,7 @@
     (make-instance 'forward-reference-field :class head))
 
   (:method ((head (eql 'or)) &rest alternatives)
-    (make-field 'or :alternatives alternatives))
+    (make-field 'or :alternatives (mapcar 'field-from-typespec alternatives)))
 
   (:method ((head (eql 'null)) &rest rest)
     (declare (ignore rest))
