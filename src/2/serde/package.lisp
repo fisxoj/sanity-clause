@@ -34,7 +34,18 @@
   (:method (serde field value)
     (declare (ignore serde field))
 
-    value))
+    value)
+
+  (:method (serde (field sanity-clause-2::null-field) value)
+    (if (alexandria:emptyp value)
+        nil
+        (error "~A is not an empty value" value)))
+
+  (:method (serde (field sanity-clause-2::or-field) value)
+    (loop :for field :in (sanity-clause-2::alternatives field)
+          ;; Return the first that doesn't error
+          :do (handler-case (return-from deserialize-value (deserialize-value serde field value))
+                (error () nil)))))
 
 
 (defgeneric serialize-value (serde field value)
