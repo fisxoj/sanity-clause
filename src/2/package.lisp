@@ -231,6 +231,10 @@
                (format s "value ~a must satisfy any of the following conditions, but did not:~%~{* ~a~%~}" value failed-validations)))))
 
 
+(defmethod shared-initialize ((field or-field) slot-names &rest initargs &key alternatives)
+  (apply #'call-next-method field slot-names :alternatives (mapcar 'make-field alternatives) initargs))
+
+
 (defmethod validate ((field or-field) value)
   (loop :with failed-validations := nil
         :for sub-field :in (alternatives field)
@@ -247,6 +251,11 @@
 (define-field list (field)
   ((element-type :initarg :element-type
                  :reader element-type)))
+
+
+(defmethod shared-initialize ((field list-field) slot-names &rest initargs &key element-type)
+  (apply #'call-next-method field slot-names :element-type (apply #'make-field element-type)
+         initargs))
 
 
 (define-condition list-validation-error (validation-error)
@@ -321,7 +330,7 @@
     (make-instance 'forward-reference-field :class head))
 
   (:method ((head (eql 'or)) &rest alternatives)
-    (make-field 'or :alternatives (mapcar 'field-from-typespec alternatives)))
+    (make-field 'or :alternatives alternatives))
 
   (:method ((head (eql 'null)) &rest rest)
     (declare (ignore rest))
@@ -330,7 +339,7 @@
 
   (:method ((head (eql 'list)) &rest rest)
 
-    (make-field 'list :element-type (apply 'field-from-typespec rest)))
+    (make-field 'list :element-type rest))
 
   (:documentation "Attempts to create a field from a valid lisp typespec.  Any field that can't be represented this way should be constructed using the :field initarg instead of the :type initarg to a slot."))
 
