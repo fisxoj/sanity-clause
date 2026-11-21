@@ -218,6 +218,19 @@
                                :condition (format nil "be greater than or equal to ~d" (minimum field))))))
 
 
+(define-field member (field)
+  ((members :type cons
+            :initarg :members
+            :initform (error "Member values are required for a member field.")
+            :reader members)))
+
+
+(defmethod validate ((field member-field) value)
+  (unless (member value (members field) :test 'string-equal)
+    (error 'validation-error :value value
+                             :condition "be string-equal to one of ~(~a~)" (members field))))
+
+
 (define-field or (field)
   ((alternatives :type list
                  :initarg :alternatives
@@ -318,6 +331,9 @@
   (:method ((head (eql 'string)) &rest rest)
     (destructuring-bind (&optional (length '*)) rest
       (make-field 'string :length (unless (eq length '*) length))))
+
+  (:method ((member (eql 'member)) &rest members)
+    (make-field 'member :members members))
 
   (:method ((head (eql 'boolean)) &rest rest)
     (declare (ignore rest))
