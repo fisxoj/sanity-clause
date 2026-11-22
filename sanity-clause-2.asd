@@ -1,8 +1,13 @@
 (defsystem sanity-clause-2
   :pathname "src/2/"
-  :depends-on ("str"
+  :depends-on ("alexandria"
+               "cl-ppcre"
+               "closer-mop"
+               "local-time"
+               "quri"
+               "str"
                "trivia")
-  :version "0.0.1"
+  :version "0.0.8"
   :components ((:file "package")
                (:module "serde"
                 :components ((:file "package")

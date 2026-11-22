@@ -8,8 +8,7 @@
 
 (in-package :sanity-clause-2)
 
-
-(defparameter +fields+ (make-hash-table :test 'eq)
+(defparameter +fields+ (make-hash-table :test 'equal)
   "Namespace for fields")
 
 
@@ -108,7 +107,10 @@
   (let ((field-name (intern (format nil "~a-FIELD" name))))
     `(progn
        (defclass ,field-name ,direct-superclasses ,direct-slots ,@options)
-       (setf (gethash ',name +fields+) (find-class ',field-name)))))
+       ;; The field's name is its identity in the namespace, regardless of the
+       ;; package it was defined with, so consumers can name fields from
+       ;; wherever they like.
+       (setf (gethash (symbol-name ',name) +fields+) (find-class ',field-name)))))
 
 
 (define-field integer (field)
@@ -196,10 +198,12 @@
 (define-field float (field)
   ((maximum :type (or null float)
             :initarg :maximum
-            :reader maximum)
+            :reader maximum
+            :initform nil)
    (minimum :type (or null float)
             :initarg :minimum
-            :reader minimum)))
+            :reader minimum
+            :initform nil)))
 
 
 (defmethod validate ((field float-field) value)
@@ -226,9 +230,9 @@
 
 
 (defmethod validate ((field member-field) value)
-  (unless (member value (members field) :test 'string-equal)
+  (unless (member value (members field) :test 'eq)
     (error 'validation-error :value value
-                             :condition "be string-equal to one of ~(~a~)" (members field))))
+                             :condition "be one of ~(~a~)" (members field))))
 
 
 (define-field or (field)
@@ -302,6 +306,125 @@
     (error 'validation-error :condition "be null" :value value)))
 
 
+(define-field constant (field)
+  ((constant :initarg :constant
+             :reader constant
+             :initform (error "A constant value is required for a constant field.")
+             :documentation "The constant value the field expects.")
+   (test :initarg :test
+         :reader constant-test
+         :initform 'equal
+         :documentation "The function used to compare the value to the constant."))
+  (:documentation "A field that expects to get the same value every time."))
+
+
+(defmethod validate ((field constant-field) value)
+  (unless (handler-case (funcall (constant-test field) (constant field) value)
+            (error () nil))
+    (error 'validation-error :value value
+                             :condition (format nil "be the constant value ~a" (constant field)))))
+
+
+(define-field uri (field)
+  ()
+  (:documentation "A field for values that should be URIs.  Accepts strings that parse to URIs with a scheme, or quri URIs."))
+
+
+(defmethod validate ((field uri-field) value)
+  (unless (or (and (typep value 'quri.uri:uri)
+                   (quri:uri-scheme value))
+              (and (typep value 'string)
+                   (handler-case (quri:uri-scheme (quri:uri value))
+                     (error () nil))))
+    (error 'validation-error :value value
+                             :condition "be a valid URI.")))
+
+
+(define-field uuid (string-field)
+  ()
+  (:documentation "A field for string values that resemble UUIDs."))
+
+
+(let ((uuid-scanner (cl-ppcre:create-scanner '(:sequence
+                                               :start-anchor
+                                               (:greedy-repetition 8 8 (:char-class (:range #\0 #\9) (:range #\a #\f))) #\-
+                                               (:greedy-repetition 4 4 (:char-class (:range #\0 #\9) (:range #\a #\f))) #\-
+                                               (:greedy-repetition 4 4 (:char-class (:range #\0 #\9) (:range #\a #\f))) #\-
+                                               (:greedy-repetition 4 4 (:char-class (:range #\0 #\9) (:range #\a #\f))) #\-
+                                               (:greedy-repetition 12 12 (:char-class (:range #\0 #\9) (:range #\a #\f)))
+                                               :end-anchor)
+                                             :case-insensitive-mode t)))
+  (defmethod validate ((field uuid-field) value)
+    (call-next-method)
+    (unless (cl-ppcre:scan uuid-scanner value)
+      (error 'validation-error :value value
+                               :condition "be a valid uuid."))))
+
+
+(define-field timestamp (field)
+  ()
+  (:documentation "A field that contains a local-time timestamp."))
+
+
+(defmethod validate ((field timestamp-field) value)
+  (unless (typep value 'local-time:timestamp)
+    (error 'validation-error :value value
+                             :condition "be a timestamp.")))
+
+
+(define-field hash-table (field)
+  ((key-field :initarg :key-field
+              :reader key-field
+              :initform 'string
+              :documentation "The field that the keys of the hash table must be valid for.")
+   (value-field :initarg :value-field
+                :reader value-field
+                :initform 'string
+                :documentation "The field that the values of the hash table must be valid for."))
+  (:documentation "A field that maps values of one kind to values of another kind, like strings to integers.  Values are hash tables.  Serde operations build hash tables with equal-test keys, since deserialized keys will rarely be symbols.
+examples::
+
+  (make-field 'hash-table :key-field 'string :value-field 'integer)
+  (validate * (alist-hash-table some-alist :test 'equal))"))
+
+
+(defmethod shared-initialize :after ((field hash-table-field) slot-names &key &allow-other-keys)
+  (declare (ignore slot-names))
+  (with-slots (key-field value-field) field
+    (unless (typep key-field 'field)
+      (setf key-field (apply #'make-field (alexandria:ensure-list key-field))))
+    (unless (typep value-field 'field)
+      (setf value-field (apply #'make-field (alexandria:ensure-list value-field))))))
+
+
+(define-condition hash-table-validation-error (validation-error)
+  ((failed-validation :initarg :failed-validation)
+   (key :initarg :key))
+  (:report (lambda (c s)
+             (with-slots (failed-validation value key) c
+               (format s "value ~a under key ~a must satisfy the following condition, but did not: ~a" value key failed-validation)))))
+
+
+(defmethod validate ((field hash-table-field) value)
+  (unless (hash-table-p value)
+    (error 'validation-error :condition "be a hash table" :value value))
+
+  (maphash (lambda (key value)
+             (handler-case (validate (key-field field) key)
+               (validation-error (e)
+                 (error 'hash-table-validation-error :failed-validation e
+                                                    :condition "be valid for the key-field"
+                                                    :value value
+                                                    :key key)))
+             (handler-case (validate (value-field field) value)
+               (validation-error (e)
+                 (error 'hash-table-validation-error :failed-validation e
+                                                    :condition "be valid for the value-field"
+                                                    :value value
+                                                    :key key))))
+           value))
+
+
 (defun infer-field-type (type)
   (trivia:match type
     ((list* head rest)
@@ -310,7 +433,7 @@
 
 
 (defun make-field (field &rest initargs)
-  (let ((field-class (gethash field +fields+)))
+  (let ((field-class (gethash (string field) +fields+)))
     (if field-class
         (apply #'make-instance field-class initargs)
         (error "No field defined with name ~S" field))))

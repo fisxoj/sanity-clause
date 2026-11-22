@@ -32,6 +32,10 @@
   (parse-integer value))
 
 
+(defmethod deserialize-value ((serde environment) (field sanity-clause-2::member-field) (value string))
+  (find value (sanity-clause-2::members field) :test 'string-equal))
+
+
 (defmethod slot-key ((serde environment) (slot sanity-clause-2::validated-slot-mixin))
   (or (call-next-method)
       (kebab-to-shouting-snake (string (closer-mop:slot-definition-name slot)))))

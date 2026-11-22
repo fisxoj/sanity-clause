@@ -3,6 +3,7 @@
   (:export
    #:serializable-metaclass
    #:serialize
+   #:serialize-value
    #:deserialize
    #:deserialize-value))
 
@@ -45,7 +46,21 @@
     (loop :for field :in (sanity-clause-2::alternatives field)
           ;; Return the first that doesn't error
           :do (handler-case (return-from deserialize-value (deserialize-value serde field value))
-                (error () nil)))))
+                (error () nil))))
+
+  (:method (serde (field sanity-clause-2::uri-field) (value string))
+    (quri:uri value))
+
+  (:method (serde (field sanity-clause-2::timestamp-field) (value string))
+    (local-time:parse-timestring value))
+
+  (:method (serde (field sanity-clause-2::hash-table-field) (value list))
+    ;; Build with the 'equal test since deserialized keys will be strings and the like
+    (loop :with table := (make-hash-table :test 'equal)
+          :for (key . value) :in value
+          :do (setf (gethash (deserialize-value serde (sanity-clause-2::key-field field) key) table)
+                    (deserialize-value serde (sanity-clause-2::value-field field) value))
+          :finally (return table))))
 
 
 (defgeneric serialize-value (serde field value)
@@ -54,7 +69,25 @@
   (:method (serde field value)
     (declare (ignore serde field))
 
-    value))
+    value)
+
+  (:method (serde (field sanity-clause-2::uri-field) (value quri.uri:uri))
+    (quri:render-uri value nil))
+
+  (:method (serde (field sanity-clause-2::timestamp-field) (value local-time:timestamp))
+    ;; Timestamps are written out in UTC unless the field's :serde options ask for a
+    ;; timezone, either generically or under this serde type's key.
+    (local-time:format-timestring
+     nil value
+     :format local-time:+iso-8601-format+
+     :timezone (or (sanity-clause-2::get-serde-option
+                    field (alexandria:make-keyword (class-name (class-of serde))) :timezone)
+                   local-time:+utc-zone+)))
+
+  (:method (serde (field sanity-clause-2::hash-table-field) (value hash-table))
+    (loop :for key :being :the :hash-keys :of value
+          :collect (cons (serialize-value serde (sanity-clause-2::key-field field) key)
+                         (serialize-value serde (sanity-clause-2::value-field field) (gethash key value))))))
 
 
 (defgeneric serialize (serde instance)
